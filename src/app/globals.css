@@ -1,27 +1,21 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  /* Brand Colors - Approximations for Pantone 377 C and 357 C */
+  --primary-green: #7B9F35; /* Pantone 377 C approx */
+  --deep-green: #215732; /* Pantone 357 C approx */
+  --accent-cyan: #00f0ff; /* Tech accent for futuristic feel */
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+  /* Backgrounds */
+  --bg-dark: #0f172a; /* Slate 900 */
+  --bg-dark-deeper: #020617; /* Slate 950 */
+  
+  /* Glassmorphism */
+  --glass-bg: rgba(30, 41, 59, 0.4); /* Slate 800 with opacity */
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: 12px;
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Text */
+  --text-primary: #f8fafc; /* Slate 50 */
+  --text-secondary: #94a3b8; /* Slate 400 */
 }
 
 * {
@@ -30,13 +24,67 @@ body {
   margin: 0;
 }
 
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  background: radial-gradient(circle at top left, var(--bg-dark), var(--bg-dark-deeper));
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
 a {
   color: inherit;
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-dark-deeper);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--deep-green);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-green);
+}
+
+/* Utility Classes for Glassmorphism */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.glass-button {
+  background: rgba(123, 159, 53, 0.2); /* Primary green tint */
+  border: 1px solid var(--primary-green);
+  color: var(--primary-green);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+}
+
+.glass-button:hover {
+  background: var(--primary-green);
+  color: white;
+  box-shadow: 0 0 15px rgba(123, 159, 53, 0.5);
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--primary-green);
+  letter-spacing: -0.025em;
 }
