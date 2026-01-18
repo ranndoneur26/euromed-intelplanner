@@ -6,6 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import styles from "./page.module.css";
 import { useLanguage } from "@/context/LanguageContext";
 import { useGravity } from "@/context/GravityContext";
+import InfoTooltip from "@/components/InfoTooltip";
 
 export default function ROIPage() {
     const { t, lang } = useLanguage();
@@ -202,7 +203,10 @@ In the Nutraceutical sector (${sector}), a ratio of ${roiRatio}x is considered *
                     <h2 className={styles.panelTitle}>{t("financialInputs")}</h2>
                     <form onSubmit={handleCalculate} className={styles.form}>
                         <div className={styles.inputGroup}>
-                            <label className={styles.label}>{t("targetGeo")}</label>
+                            <label className={styles.label}>
+                                {t("targetGeo")}
+                                <InfoTooltip content={t("tooltipGeoMarket")} />
+                            </label>
                             <select className={styles.input} value={region} onChange={e => setRegion(e.target.value)}>
                                 <option value="EMEA">EMEA (Europe, Middle East, Africa)</option>
                                 <option value="APAC">APAC (Asia Pacific)</option>
@@ -224,7 +228,10 @@ In the Nutraceutical sector (${sector}), a ratio of ${roiRatio}x is considered *
                             </div>
                         )}
                         <div className={styles.inputGroup}>
-                            <label className={styles.label}>{t("sector") || "Sector"}</label>
+                            <label className={styles.label}>
+                                {t("sector") || "Sector"}
+                                <InfoTooltip content={t("tooltipSector")} />
+                            </label>
                             <select className={styles.input} value={sector} onChange={e => setSector(e.target.value)}>
                                 <option value="General">General / Pharma</option>
                                 <option value="Plant-based">Plant-based / Meat Alternatives</option>
@@ -246,11 +253,17 @@ In the Nutraceutical sector (${sector}), a ratio of ${roiRatio}x is considered *
                             </div>
                         )}
                         <div className={styles.inputGroup}>
-                            <label className={styles.label}>{t("totalInvestment")}</label>
+                            <label className={styles.label}>
+                                {t("totalInvestment")}
+                                <InfoTooltip content={t("tooltipROIInvestment")} />
+                            </label>
                             <input className={styles.input} type="number" value={investment} onChange={e => setInvestment(e.target.value)} placeholder="Min $5000" required />
                         </div>
                         <div className={styles.inputGroup}>
-                            <label className={styles.label}>{t("projectedRevenue")}</label>
+                            <label className={styles.label}>
+                                {t("projectedRevenue")}
+                                <InfoTooltip content={t("tooltipROIRevenue")} />
+                            </label>
                             <input className={styles.input} type="number" value={revenue} onChange={e => setRevenue(e.target.value)} placeholder="120000" required />
                         </div>
                         <button type="submit" className={`glass-button ${styles.submitBtn}`} disabled={loading}>

@@ -5,6 +5,7 @@ import { Share2, Sparkles, Smartphone, Tv } from "lucide-react";
 import styles from "./page.module.css";
 import { useLanguage } from "@/context/LanguageContext";
 import { useGravity } from "@/context/GravityContext";
+import InfoTooltip from "@/components/InfoTooltip";
 
 interface Channel {
     name: string;
@@ -62,7 +63,10 @@ export default function ChannelsPage() {
                     <Share2 size={40} />
                 </div>
                 <div>
-                    <h1 className={styles.title}>{t("omnichannelMix")}</h1>
+                    <h1 className={styles.title}>
+                        {seed && <span style={{ opacity: 0.7 }}>{seed}: </span>}
+                        {t("omnichannelMix")}
+                    </h1>
                     <p className={styles.subtitle}>{t("channelsSubtitle")}</p>
                 </div>
             </header>
@@ -72,11 +76,17 @@ export default function ChannelsPage() {
                     <h2 className={styles.panelTitle}>{t("marketParameters")}</h2>
                     <form onSubmit={handleGenerate} className={styles.form}>
                         <div className={styles.inputGroup}>
-                            <label className={styles.label}>{t("targetGeo")}</label>
+                            <label className={styles.label}>
+                                {t("targetGeo")}
+                                <InfoTooltip content={t("tooltipGeoMarket")} />
+                            </label>
                             <input className={styles.input} value={market} onChange={e => setMarket(e.target.value)} placeholder="e.g. South Europe" required />
                         </div>
                         <div className={styles.inputGroup}>
-                            <label className={styles.label}>{t("targetAudience")}</label>
+                            <label className={styles.label}>
+                                {t("targetAudience")}
+                                <InfoTooltip content={t("tooltipTargetAudience")} />
+                            </label>
                             <input className={styles.input} value={audience} onChange={e => setAudience(e.target.value)} placeholder="e.g. Pharma buyers, Health enthusiasts" required />
                         </div>
                         <button type="submit" className={`glass-button ${styles.submitBtn}`} disabled={loading}>
