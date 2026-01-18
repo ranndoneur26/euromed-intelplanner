@@ -386,3 +386,122 @@ FORMATO DE SALIDA (JSON):
         throw error;
     }
 }
+
+/**
+ * Generate comprehensive ROI analysis based on the seed/asset
+ */
+export async function generateROIAnalysis(params: {
+    seed: string;
+    investment: number;
+    projectedRevenue: number;
+    region: string;
+    sector: string;
+    lang: string;
+}) {
+    const { seed, investment, projectedRevenue, region, sector, lang } = params;
+
+    const langMap: Record<string, string> = {
+        es: "español",
+        ca: "catalán",
+        en: "inglés"
+    };
+
+    const multiplier = projectedRevenue / (investment || 1);
+
+    const prompt = `Eres un analista financiero especializado en inversiones de marketing para ingredientes nutracéuticos B2B.
+
+CONTEXTO:
+- Ingrediente/Asset: ${seed}
+- Inversión total: €${investment.toLocaleString()}
+- Ingresos proyectados: €${projectedRevenue.toLocaleString()}
+- Multiplicador ROI: ${multiplier.toFixed(2)}x
+- Región objetivo: ${region}
+- Sector: ${sector}
+
+TAREA:
+Genera un análisis de ROI completo y profesional en ${langMap[lang] || "español"} específico para el ingrediente "${seed}".
+
+Proporciona:
+
+1. **quarterlyProjection**: Array de 4 objetos (Q1-Q4) con proyecciones financieras basadas en el comportamiento típico de lanzamiento de ingredientes como ${seed}:
+   - quarter: "Q1", "Q2", "Q3", "Q4"
+   - investment: Porcentaje de inversión en ese trimestre (número entero, suma = 100)
+   - revenue: Porcentaje de retorno en ese trimestre (número entero, suma = 100)
+   - cumulativeROI: ROI acumulado hasta ese trimestre (número decimal, ej: -0.35, 0.10, 0.45, 1.20)
+
+2. **channelAllocation**: Array de 5 canales de inversión recomendados para ${seed}:
+   - channel: Nombre del canal
+   - percentage: Porcentaje del presupuesto (suma = 100)
+   - rationale: Justificación breve (1-2 líneas)
+
+3. **riskAssessment**: Objeto con:
+   - level: "Low", "Medium" o "High"
+   - score: Número 1-100 (1-33 = Low, 34-66 = Medium, 67-100 = High)
+   - factors: Array de 3 strings con factores de riesgo específicos para ${seed}
+
+4. **executiveSummary**: Párrafo de 5-7 líneas con resumen ejecutivo que incluya:
+   - Evaluación de viabilidad específica para ${seed}
+   - Punto de equilibrio (break-even) estimado
+   - Recomendación estratégica
+   - Mencionar datos de mercado relevantes para ${seed}
+
+5. **keyMetrics**: Objeto con:
+   - breakEvenQuarter: "Q1", "Q2", "Q3" o "Q4"
+   - expectedCAGR: Número decimal (ej: 12.5 para 12.5%)
+   - marketPenetration: Número decimal esperado (ej: 3.5 para 3.5%)
+   - paybackPeriod: Número de meses
+
+IMPORTANTE:
+- Considera que ${seed} es un ingrediente botánico/nutracéutico
+- Si inversión < €10,000, marca como riesgo alto de "inversión insuficiente"
+- Si región es APAC y inversión < €20,000, advertir sobre volumen insuficiente
+- Si sector es Plant-based, el CAGR debería reflejar el 10.6% del sector
+- Las proyecciones deben ser realistas para un ingrediente B2B
+- El análisis debe ser específico y mencionar el ingrediente por nombre
+
+FORMATO DE SALIDA (JSON):
+{
+  "quarterlyProjection": [
+    {"quarter": "Q1", "investment": 40, "revenue": 5, "cumulativeROI": -0.35},
+    {"quarter": "Q2", "investment": 30, "revenue": 20, "cumulativeROI": -0.10},
+    {"quarter": "Q3", "investment": 20, "revenue": 35, "cumulativeROI": 0.25},
+    {"quarter": "Q4", "investment": 10, "revenue": 40, "cumulativeROI": 0.80}
+  ],
+  "channelAllocation": [
+    {"channel": "Trade Shows", "percentage": 35, "rationale": "Vital for B2B connections"},
+    {"channel": "Digital Marketing", "percentage": 25, "rationale": "..."},
+    {"channel": "Content Marketing", "percentage": 20, "rationale": "..."},
+    {"channel": "Direct Sales", "percentage": 15, "rationale": "..."},
+    {"channel": "PR", "percentage": 5, "rationale": "..."}
+  ],
+  "riskAssessment": {
+    "level": "Medium",
+    "score": 45,
+    "factors": ["Factor 1", "Factor 2", "Factor 3"]
+  },
+  "executiveSummary": "Resumen ejecutivo detallado...",
+  "keyMetrics": {
+    "breakEvenQuarter": "Q3",
+    "expectedCAGR": 15.5,
+    "marketPenetration": 2.8,
+    "paybackPeriod": 9
+  }
+}`;
+
+    try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+            throw new Error("Invalid JSON response from AI");
+        }
+
+        const parsed = JSON.parse(jsonMatch[0]);
+        return parsed;
+    } catch (error) {
+        console.error("Error generating ROI analysis:", error);
+        throw error;
+    }
+}

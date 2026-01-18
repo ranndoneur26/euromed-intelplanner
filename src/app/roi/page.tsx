@@ -1,27 +1,66 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { TrendingUp, Sparkles, AlertTriangle, Zap, BrainCircuit } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { TrendingUp, Sparkles, AlertTriangle, CheckCircle2, PieChart, BarChart3, Target, Download } from "lucide-react";
+import {
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+    LineChart, Line, PieChart as RechartsPieChart, Pie, Cell, AreaChart, Area,
+    RadialBarChart, RadialBar
+} from "recharts";
 import styles from "./page.module.css";
 import { useLanguage } from "@/context/LanguageContext";
 import { useGravity } from "@/context/GravityContext";
 import InfoTooltip from "@/components/InfoTooltip";
+
+interface QuarterlyData {
+    quarter: string;
+    investment: number;
+    revenue: number;
+    cumulativeROI: number;
+}
+
+interface ChannelData {
+    channel: string;
+    percentage: number;
+    rationale: string;
+}
+
+interface RiskAssessment {
+    level: "Low" | "Medium" | "High";
+    score: number;
+    factors: string[];
+}
+
+interface KeyMetrics {
+    breakEvenQuarter: string;
+    expectedCAGR: number;
+    marketPenetration: number;
+    paybackPeriod: number;
+}
+
+interface ROIResult {
+    quarterlyProjection: QuarterlyData[];
+    channelAllocation: ChannelData[];
+    riskAssessment: RiskAssessment;
+    executiveSummary: string;
+    keyMetrics: KeyMetrics;
+}
+
+const COLORS = ['#7B9F35', '#377cbc', '#00f0ff', '#f59e0b', '#8b5cf6'];
 
 export default function ROIPage() {
     const { t, lang } = useLanguage();
     const { seed, budget: contextBudget, completeStep } = useGravity();
     const [investment, setInvestment] = useState("");
     const [revenue, setRevenue] = useState("");
-    const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
-    const [risk, setRisk] = useState<string | null>(null);
+    const [result, setResult] = useState<ROIResult | null>(null);
+    const [error, setError] = useState("");
     const [region, setRegion] = useState("EMEA");
     const [sector, setSector] = useState("General");
     const [customRegion, setCustomRegion] = useState("");
     const [customSector, setCustomSector] = useState("");
-    const [explaining, setExplaining] = useState(false);
-    const [explanation, setExplanation] = useState("");
+    const [activeChart, setActiveChart] = useState<"performance" | "channels" | "roi">("performance");
 
     // Auto-fill investment from Strategy's budget
     useEffect(() => {
@@ -30,157 +69,148 @@ export default function ROIPage() {
         }
     }, [contextBudget, investment]);
 
-    const handleCalculate = (e: React.FormEvent) => {
+    const handleCalculate = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
+        setError("");
+        setResult(null);
 
         const investVal = parseFloat(investment) || 0;
         const revVal = parseFloat(revenue) || 0;
 
-        setTimeout(() => {
-            // LOGIC GATE 3.1: Minimum Viable Intelligence (MVI)
-            if (investVal < 5000) {
-                let errorMsg = "";
-                if (lang === "es") errorMsg = "🚫 BLOQUEO ESTRATÉGICO: Inversión inferior al Umbral MVI (€5,000). Riesgo de 'Ceguera Estratégica'. El sistema no puede garantizar precisión sin presupuesto para inteligencia de mercado (Technavio).";
-                else if (lang === "ca") errorMsg = "🚫 BLOQUEIG ESTRATÈGIC: Inversió inferior al Llindar MVI (€5,000). Risc de 'Ceguera Estratègica'. El sistema no pot garantir precisió sense pressupost per a intel·ligència de mercat (Technavio).";
-                else errorMsg = "🚫 STRATEGIC LOCK: Investment below MVI Threshold (€5,000). Risk of 'Strategic Blindness'. System cannot guarantee accuracy without budget for market intelligence.";
+        // Validation
+        if (investVal < 5000) {
+            const errorMsg = lang === "es"
+                ? "🚫 BLOQUEO ESTRATÉGICO: Inversión inferior al Umbral MVI (€5,000)."
+                : lang === "ca"
+                    ? "🚫 BLOQUEIG ESTRATÈGIC: Inversió inferior al Llindar MVI (€5,000)."
+                    : "🚫 STRATEGIC LOCK: Investment below MVI Threshold (€5,000).";
+            setError(errorMsg);
+            return;
+        }
 
-                setRisk(errorMsg);
-                setData([]);
-                setLoading(false);
-                return;
-            }
+        setLoading(true);
 
-            // Mock Data Generation
-            const newData = [
-                { name: "Q1", investment: investVal * 0.4, return: revVal * 0.05 }, // Heavy spend early
-                { name: "Q2", investment: investVal * 0.3, return: revVal * 0.15 },
-                { name: "Q3", investment: investVal * 0.2, return: revVal * 0.30 },
-                { name: "Q4", investment: investVal * 0.1, return: revVal * 0.50 }, // Hockey stick return
-            ];
-
-            const multiplier = revVal / (investVal || 1);
-
-            // LOGIC GATE 3.2: Sufficiency & CAGR
-            let isFeasible = multiplier > 1.2;
-            let sufficiencyMsg = "";
-
-            if (region === "EMEA" && sector.includes("Plant")) {
-                // CAGR Check 10.6%
-                if (multiplier < 1.5) {
-                    sufficiencyMsg = lang === "es" ? "⚠️ ALERTA CAGR: El retorno proyectado no supera el crecimiento orgánico del sector Plant-based (10.6%)." : (lang === "ca" ? "⚠️ ALERTA CAGR: El retorn projectat no supera el creixement orgànic del sector Plant-based (10.6%)." : "⚠️ CAGR ALERT: Projected return does not beat Plant-based organic growth (10.6%).");
-                }
-            } else if (region === "APAC") {
-                // Volume check
-                if (investVal < 20000) {
-                    sufficiencyMsg = lang === "es" ? "⚠️ VOLUMEN INSUFICIENTE: Presupuesto incapaz de penetrar mercados de alta densidad (India/China)." : (lang === "ca" ? "⚠️ VOLUMEN INSUFICIENT: Pressupost incapaç de penetrar mercats d'alta densitat (Índia/Xina)." : "⚠️ INSUFFICIENT VOLUME: Budget unable to penetrate high-density markets (India/China).");
-                    isFeasible = false;
-                }
-            }
-
-
-            let riskFactor = "";
-            let riskLevel = "";
-
-            if (lang === "es") {
-                riskLevel = isFeasible ? "Bajo" : "Alto";
-                if (isFeasible) {
-                    riskFactor = `EVALUACIÓN DE VIABILIDAD: ${riskLevel} RIESGO (Multiplicador ${multiplier.toFixed(2)}x).\n\n` +
-                        `El modelo financiero proyectado demuestra una salud robusta. ${sufficiencyMsg} Con una inversión inicial de ${investVal.toLocaleString()}€ generando ${revVal.toLocaleString()}€, la estructura de costes permite un punto de equilibrio estimado para mediados del Q3.`;
-                } else {
-                    riskFactor = `EVALUACIÓN DE VIABILIDAD: ${riskLevel} RIESGO (Multiplicador ${multiplier.toFixed(2)}x).\n\n` +
-                        `ATENCIÓN: ${sufficiencyMsg || "La proyección actual indica una exposición financiera significativa."} Se recomienda revisar la estructura de costes.`;
-                }
-            } else if (lang === "ca") {
-                riskLevel = isFeasible ? "Baix" : "Alt";
-                if (isFeasible) {
-                    riskFactor = `AVALUACIÓ DE VIABILITAT: ${riskLevel} RISC (Multiplicador ${multiplier.toFixed(2)}x).\n\n` +
-                        `El model financer projectat demostra una salut robusta. ${sufficiencyMsg} Amb una inversió inicial de ${investVal.toLocaleString()}€ generant ${revVal.toLocaleString()}€, l'estructura de costos permet un punt d'equilibri estimat per a mitjans del Q3.`;
-                } else {
-                    riskFactor = `AVALUACIÓ DE VIABILITAT: ${riskLevel} RISC (Multiplicador ${multiplier.toFixed(2)}x).\n\n` +
-                        `ATENCIÓ: ${sufficiencyMsg || "La projecció actual indica una exposició financera significativa."} Es recomana revisar l'estructura de costos.`;
-                }
-            } else {
-                riskLevel = isFeasible ? "Low" : "High";
-                if (isFeasible) {
-                    riskFactor = `VIABILITY ASSESSMENT: ${riskLevel} RISK (Multiplier ${multiplier.toFixed(2)}x).\n\n` +
-                        `The projected financial model demonstrates robust health. ${sufficiencyMsg} With an initial investment of ${investVal.toLocaleString()}€, the break-even is estimated by mid-Q3.`;
-                } else {
-                    riskFactor = `VIABILITY ASSESSMENT: ${riskLevel} RISK (Multiplier ${multiplier.toFixed(2)}x).\n\n` +
-                        `WARNING: ${sufficiencyMsg || "The current projection indicates significant financial exposure."} Review cost structure.`;
-                }
-            }
-
-            setData(newData);
-            setRisk(riskFactor);
-            completeStep("roi", newData);
-            setLoading(false);
-        }, 1500);
-    };
-
-    const handleExplain = () => {
-        setExplaining(true);
-        setTimeout(() => {
-            let content = "";
-            const currentInvest = parseFloat(investment) || 0;
-            const currentRev = parseFloat(revenue) || 0;
-            const roiRatio = (currentRev / (currentInvest || 1)).toFixed(2);
+        try {
             const actualRegion = region === "Other" ? customRegion : region;
             const actualSector = sector === "Other" ? customSector : sector;
 
-            if (lang === "ca") {
-                content = `**ANÀLISI EXPERT DE FLUX DE CAIXA I ESTRATÈGIA**
+            const response = await fetch('/api/ai/roi', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    seed,
+                    investment: investVal,
+                    projectedRevenue: revVal,
+                    region: actualRegion,
+                    sector: actualSector,
+                    lang
+                })
+            });
 
-**1. Descodificació de la Gràfica (Q1-Q4):**
-La distribució de la inversió mostra una estratègia de **"Front-Loading"** (40% al Q1), típica de llançaments agressius per a ${seed}.
-*   **Punt d'Inflexió (Break-even):** S'observa al final del Q2. Això és òptim per a productes de cicle mitjà, però agressiu si no hi ha pre-vendes pactades.
-*   **Curva de Retorn (Hockey Stick):** El retorn es dispara al Q4 (50% del total). Això indica una dependència crítica de la campanya de "re-stocking" de final d'any o de l'èxit de fires com CPhI/SupplySide.
-
-**2. Valoració del Multiplicador (${roiRatio}x):**
-En el sector Nutracèutic (${sector}), un rati de ${roiRatio}x es considera **${parseFloat(roiRatio) > 4 ? "EXCEL·LENT" : (parseFloat(roiRatio) > 2 ? "SÒLID" : "ARRISCAT")}**.
-*   **Insight d'IA:** Amb aquest pressupost (${currentInvest.toLocaleString()}€), estàs competint per "Share of Voice", no per "Share of Market" massiu. L'eficiència és clau.
-
-**3. Consell Estratègic (The "Smart Move"):**
-*   **Recomanació:** No dilueixis el pressupost del Q1. Si el Q1 falla, el Q4 no arribarà.
-*   **Tactical Shift:** Considera moure un 5% del pressupost de Q3 a Q1 per assegurar materials de venda (Sales Kits) més robustos abans de les primeres reunions.
-*   **Advertència:** Els competidors en ${region} solen augmentar la despesa digital al Q2. Assegura't de tenir "Always-on" a LinkedIn per no perdre tracció al mig de l'any.`;
-            } else if (lang === "es") {
-                content = `**ANÁLISIS EXPERTO DE FLUJO DE CAJA Y ESTRATEGIA**
-
-**1. Descodificación de la Gráfica (Q1-Q4):**
-La distribución de la inversión muestra una estrategia de **"Front-Loading"** (40% en Q1), típica de lanzamientos agresivos para ${seed}.
-*   **Punto de Inflexión (Break-even):** Se observa al final del Q2. Esto es óptimo para productos de ciclo medio, pero agresivo sin pre-ventas pactadas.
-*   **Curva de Retorno (Hockey Stick):** El retorno se dispara en Q4 (50% del total). Esto indica una dependencia crítica de la campaña de "re-stocking" de fin de año o del éxito de ferias como CPhI/SupplySide.
-
-**2. Valoración del Multiplicador (${roiRatio}x):**
-En el sector Nutracéutico (${sector}), un ratio de ${roiRatio}x se considera **${parseFloat(roiRatio) > 4 ? "EXCELENTE" : (parseFloat(roiRatio) > 2 ? "SÓLIDO" : "ARRIESGADO")}**.
-*   **Insight de IA:** Con este presupuesto (${currentInvest.toLocaleString()}€), estás compitiendo por "Share of Voice", no por "Share of Market" masivo. La eficiencia es clave.
-
-**3. Consejo Estratégico (The "Smart Move"):**
-*   **Recomendación:** No diluyas el presupuesto del Q1. Si el Q1 falla, el Q4 no llegará.
-*   **Tactical Shift:** Considera mover un 5% del presupuesto de Q3 a Q1 para asegurar materiales de venta (Sales Kits) más robustos antes de las primeras reuniones.
-*   **Advertencia:** Los competidores en ${region} suelen aumentar el gasto digital en Q2. Asegúrate de tener "Always-on" en LinkedIn para no perder tracción a mitad de año.`;
-            } else {
-                content = `**EXPERT CASH FLOW & STRATEGY ANALYSIS**
-
-**1. Graph Decoding (Q1-Q4):**
-The investment distribution shows a **"Front-Loading"** strategy (40% in Q1), typical of aggressive launches for ${seed}.
-*   **Inflection Point (Break-even):** Observed at the end of Q2. This is optimal for mid-cycle products but aggressive without agreed pre-sales.
-*   **Return Curve (Hockey Stick):** Return spikes in Q4 (50% of total). This indicates critical dependence on the end-of-year "re-stocking" campaign or the success of shows like CPhI/SupplySide.
-
-**2. Multiplier Assessment (${roiRatio}x):**
-In the Nutraceutical sector (${sector}), a ratio of ${roiRatio}x is considered **${parseFloat(roiRatio) > 4 ? "EXCELLENT" : (parseFloat(roiRatio) > 2 ? "SOLID" : "RISKY")}**.
-*   **AI Insight:** With this budget (${currentInvest.toLocaleString()}€), you are competing for "Share of Voice", not massive "Share of Market". Efficiency is key.
-
-**3. Strategic Advice (The "Smart Move"):**
-*   **Recommendation:** Do not dilute Q1 budget. If Q1 fails, Q4 won't happen.
-*   **Tactical Shift:** Consider moving 5% of Q3 budget to Q1 to ensure more robust Sales Kits before initial meetings.
-*   **Warning:** Competitors in ${region} tend to increase digital spend in Q2. Ensure "Always-on" presence on LinkedIn to avoid losing traction mid-year.`;
+            if (!response.ok) {
+                throw new Error('Failed to generate ROI analysis');
             }
 
-            setExplanation(content);
-            setExplaining(false);
-        }, 2000);
+            const data = await response.json();
+            setResult(data);
+            completeStep("roi", data);
+        } catch (err) {
+            console.error("ROI analysis error:", err);
+            setError(lang === "es"
+                ? "Error al generar el análisis de ROI. Intente de nuevo."
+                : lang === "ca"
+                    ? "Error en generar l'anàlisi de ROI. Torneu-ho a intentar."
+                    : "Error generating ROI analysis. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleExport = () => {
+        if (!result) return;
+
+        const content = `
+EUROMED INTELPLANNER - ROI ANALYSIS REPORT
+==========================================
+Date: ${new Date().toLocaleDateString()}
+Asset: ${seed}
+Investment: €${investment}
+Projected Revenue: €${revenue}
+Region: ${region === "Other" ? customRegion : region}
+Sector: ${sector === "Other" ? customSector : sector}
+
+EXECUTIVE SUMMARY
+-----------------
+${result.executiveSummary}
+
+KEY METRICS
+-----------
+- Break-even Quarter: ${result.keyMetrics.breakEvenQuarter}
+- Expected CAGR: ${result.keyMetrics.expectedCAGR}%
+- Market Penetration: ${result.keyMetrics.marketPenetration}%
+- Payback Period: ${result.keyMetrics.paybackPeriod} months
+
+QUARTERLY PROJECTION
+--------------------
+${result.quarterlyProjection.map(q =>
+            `${q.quarter}: Investment ${q.investment}% | Revenue ${q.revenue}% | Cumulative ROI ${(q.cumulativeROI * 100).toFixed(0)}%`
+        ).join('\n')}
+
+CHANNEL ALLOCATION
+------------------
+${result.channelAllocation.map(c =>
+            `${c.channel}: ${c.percentage}% - ${c.rationale}`
+        ).join('\n')}
+
+RISK ASSESSMENT
+---------------
+Level: ${result.riskAssessment.level} (Score: ${result.riskAssessment.score}/100)
+Risk Factors:
+${result.riskAssessment.factors.map(f => `- ${f}`).join('\n')}
+
+==========================================
+Generated by Euromed IntelPlanner AI
+`;
+        const blob = new Blob([content], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `ROI_Analysis_${seed}_${new Date().toISOString().split('T')[0]}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
+    // Prepare chart data
+    const getQuarterlyChartData = () => {
+        if (!result) return [];
+        const investVal = parseFloat(investment) || 0;
+        const revVal = parseFloat(revenue) || 0;
+
+        return result.quarterlyProjection.map(q => ({
+            name: q.quarter,
+            investment: Math.round(investVal * q.investment / 100),
+            revenue: Math.round(revVal * q.revenue / 100),
+            roi: Math.round(q.cumulativeROI * 100)
+        }));
+    };
+
+    const getPieChartData = () => {
+        if (!result) return [];
+        return result.channelAllocation.map(c => ({
+            name: c.channel,
+            value: c.percentage
+        }));
+    };
+
+    const getRiskColor = (level: string) => {
+        switch (level) {
+            case "Low": return "#22c55e";
+            case "Medium": return "#f59e0b";
+            case "High": return "#ef4444";
+            default: return "#94a3b8";
+        }
     };
 
     return (
@@ -199,6 +229,7 @@ In the Nutraceutical sector (${sector}), a ratio of ${roiRatio}x is considered *
             </header>
 
             <div className={styles.grid}>
+                {/* Input Panel */}
                 <section className={`${styles.panel} glass-panel`}>
                     <h2 className={styles.panelTitle}>{t("financialInputs")}</h2>
                     <form onSubmit={handleCalculate} className={styles.form}>
@@ -211,6 +242,7 @@ In the Nutraceutical sector (${sector}), a ratio of ${roiRatio}x is considered *
                                 <option value="EMEA">EMEA (Europe, Middle East, Africa)</option>
                                 <option value="APAC">APAC (Asia Pacific)</option>
                                 <option value="NA">North America</option>
+                                <option value="LATAM">Latin America</option>
                                 <option value="Other">{lang === "es" ? "Otro" : lang === "ca" ? "Altre" : "Other"}</option>
                             </select>
                         </div>
@@ -236,6 +268,8 @@ In the Nutraceutical sector (${sector}), a ratio of ${roiRatio}x is considered *
                                 <option value="General">General / Pharma</option>
                                 <option value="Plant-based">Plant-based / Meat Alternatives</option>
                                 <option value="Immune">Immune Health</option>
+                                <option value="Beauty">Beauty & Cosmetics</option>
+                                <option value="Sports">Sports Nutrition</option>
                                 <option value="Other">{lang === "es" ? "Otro" : lang === "ca" ? "Altre" : "Other"}</option>
                             </select>
                         </div>
@@ -257,102 +291,234 @@ In the Nutraceutical sector (${sector}), a ratio of ${roiRatio}x is considered *
                                 {t("totalInvestment")}
                                 <InfoTooltip content={t("tooltipROIInvestment")} />
                             </label>
-                            <input className={styles.input} type="number" value={investment} onChange={e => setInvestment(e.target.value)} placeholder="Min $5000" required />
+                            <input className={styles.input} type="number" value={investment} onChange={e => setInvestment(e.target.value)} placeholder="Min €5000" required />
                         </div>
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>
                                 {t("projectedRevenue")}
                                 <InfoTooltip content={t("tooltipROIRevenue")} />
                             </label>
-                            <input className={styles.input} type="number" value={revenue} onChange={e => setRevenue(e.target.value)} placeholder="120000" required />
+                            <input className={styles.input} type="number" value={revenue} onChange={e => setRevenue(e.target.value)} placeholder="€120000" required />
                         </div>
+
+                        {error && (
+                            <div className={styles.errorBox}>
+                                <AlertTriangle size={20} />
+                                <p>{error}</p>
+                            </div>
+                        )}
+
                         <button type="submit" className={`glass-button ${styles.submitBtn}`} disabled={loading}>
-                            {loading ? t("calculating") : t("calculateViability")}
+                            {loading ? (
+                                <span className={styles.generating}>
+                                    <Sparkles size={18} className={styles.spin} />
+                                    {lang === "es" ? "Analizando ROI..." : lang === "ca" ? "Analitzant ROI..." : "Analyzing ROI..."}
+                                </span>
+                            ) : t("calculateViability")}
                         </button>
                     </form>
-
-                    {risk && (
-                        <div className={styles.riskBox}>
-                            <AlertTriangle size={20} className={risk.includes("High") || risk.includes("Alto") || risk.includes("Alt") ? styles.riskIconHigh : styles.riskIconLow} />
-                            <p>{risk}</p>
-                        </div>
-                    )}
                 </section>
 
-                <section className={`${styles.panel} ${styles.chartPanel} glass-panel`}>
-                    <h2 className={styles.panelTitle}>{t("projectedPerformance")}</h2>
-                    {data.length > 0 ? (
-                        <div className={styles.chartContainer}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={data}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                                    <XAxis dataKey="name" stroke="#94a3b8" />
-                                    <YAxis stroke="#94a3b8" />
-                                    <Tooltip
-                                        contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
-                                    />
-                                    <Legend />
-                                    <Bar dataKey="investment" fill="#7B9F35" name={t("investment")} />
-                                    <Bar dataKey="return" fill="#00f0ff" name={t("projectedReturn")} />
-                                </BarChart>
-                            </ResponsiveContainer>
+                {/* Results Panel */}
+                <section className={`${styles.panel} ${styles.resultsPanel} glass-panel`}>
+                    {result ? (
+                        <div className={styles.resultsContent}>
+                            {/* Key Metrics Cards */}
+                            <div className={styles.metricsGrid}>
+                                <div className={styles.metricCard}>
+                                    <Target size={24} className={styles.metricIcon} />
+                                    <div>
+                                        <span className={styles.metricLabel}>Break-even</span>
+                                        <span className={styles.metricValue}>{result.keyMetrics.breakEvenQuarter}</span>
+                                    </div>
+                                </div>
+                                <div className={styles.metricCard}>
+                                    <TrendingUp size={24} className={styles.metricIcon} />
+                                    <div>
+                                        <span className={styles.metricLabel}>CAGR</span>
+                                        <span className={styles.metricValue}>{result.keyMetrics.expectedCAGR}%</span>
+                                    </div>
+                                </div>
+                                <div className={styles.metricCard}>
+                                    <PieChart size={24} className={styles.metricIcon} />
+                                    <div>
+                                        <span className={styles.metricLabel}>{lang === "es" ? "Penetración" : lang === "ca" ? "Penetració" : "Penetration"}</span>
+                                        <span className={styles.metricValue}>{result.keyMetrics.marketPenetration}%</span>
+                                    </div>
+                                </div>
+                                <div className={styles.metricCard} style={{ borderColor: getRiskColor(result.riskAssessment.level) }}>
+                                    <AlertTriangle size={24} style={{ color: getRiskColor(result.riskAssessment.level) }} />
+                                    <div>
+                                        <span className={styles.metricLabel}>{lang === "es" ? "Riesgo" : lang === "ca" ? "Risc" : "Risk"}</span>
+                                        <span className={styles.metricValue} style={{ color: getRiskColor(result.riskAssessment.level) }}>
+                                            {result.riskAssessment.level}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Executive Summary */}
+                            <div className={styles.summaryBox}>
+                                <h3 className={styles.summaryTitle}>
+                                    <CheckCircle2 size={20} />
+                                    {lang === "es" ? "Resumen Ejecutivo" : lang === "ca" ? "Resum Executiu" : "Executive Summary"}
+                                </h3>
+                                <p className={styles.summaryText}>{result.executiveSummary}</p>
+                            </div>
+
+                            {/* Chart Tabs */}
+                            <div className={styles.chartTabs}>
+                                <button
+                                    className={`${styles.chartTab} ${activeChart === "performance" ? styles.active : ""}`}
+                                    onClick={() => setActiveChart("performance")}
+                                >
+                                    <BarChart3 size={16} />
+                                    {lang === "es" ? "Rendimiento" : lang === "ca" ? "Rendiment" : "Performance"}
+                                </button>
+                                <button
+                                    className={`${styles.chartTab} ${activeChart === "channels" ? styles.active : ""}`}
+                                    onClick={() => setActiveChart("channels")}
+                                >
+                                    <PieChart size={16} />
+                                    {lang === "es" ? "Canales" : lang === "ca" ? "Canals" : "Channels"}
+                                </button>
+                                <button
+                                    className={`${styles.chartTab} ${activeChart === "roi" ? styles.active : ""}`}
+                                    onClick={() => setActiveChart("roi")}
+                                >
+                                    <TrendingUp size={16} />
+                                    ROI
+                                </button>
+                            </div>
+
+                            {/* Charts */}
+                            <div className={styles.chartContainer}>
+                                {activeChart === "performance" && (
+                                    <ResponsiveContainer width="100%" height={300}>
+                                        <BarChart data={getQuarterlyChartData()}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                                            <XAxis dataKey="name" stroke="#94a3b8" />
+                                            <YAxis stroke="#94a3b8" tickFormatter={(v) => `€${(v / 1000).toFixed(0)}k`} />
+                                            <Tooltip
+                                                contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
+                                                formatter={(value: number) => [`€${value.toLocaleString()}`, '']}
+                                            />
+                                            <Legend />
+                                            <Bar dataKey="investment" fill="#7B9F35" name={t("investment")} radius={[4, 4, 0, 0]} />
+                                            <Bar dataKey="revenue" fill="#00f0ff" name={lang === "es" ? "Ingresos" : lang === "ca" ? "Ingressos" : "Revenue"} radius={[4, 4, 0, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                )}
+
+                                {activeChart === "channels" && (
+                                    <div className={styles.pieChartWrapper}>
+                                        <ResponsiveContainer width="100%" height={300}>
+                                            <RechartsPieChart>
+                                                <Pie
+                                                    data={getPieChartData()}
+                                                    cx="50%"
+                                                    cy="50%"
+                                                    innerRadius={60}
+                                                    outerRadius={100}
+                                                    paddingAngle={3}
+                                                    dataKey="value"
+                                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                                    labelLine={{ stroke: '#94a3b8' }}
+                                                >
+                                                    {getPieChartData().map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                    ))}
+                                                </Pie>
+                                                <Tooltip
+                                                    contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
+                                                />
+                                            </RechartsPieChart>
+                                        </ResponsiveContainer>
+                                        <div className={styles.channelLegend}>
+                                            {result.channelAllocation.map((c, i) => (
+                                                <div key={i} className={styles.channelItem}>
+                                                    <span className={styles.channelDot} style={{ backgroundColor: COLORS[i % COLORS.length] }}></span>
+                                                    <span className={styles.channelName}>{c.channel}</span>
+                                                    <span className={styles.channelPercent}>{c.percentage}%</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {activeChart === "roi" && (
+                                    <ResponsiveContainer width="100%" height={300}>
+                                        <AreaChart data={getQuarterlyChartData()}>
+                                            <defs>
+                                                <linearGradient id="roiGradient" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="#7B9F35" stopOpacity={0.8} />
+                                                    <stop offset="95%" stopColor="#7B9F35" stopOpacity={0.1} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                                            <XAxis dataKey="name" stroke="#94a3b8" />
+                                            <YAxis stroke="#94a3b8" tickFormatter={(v) => `${v}%`} />
+                                            <Tooltip
+                                                contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
+                                                formatter={(value: number) => [`${value}%`, 'ROI']}
+                                            />
+                                            <Area
+                                                type="monotone"
+                                                dataKey="roi"
+                                                stroke="#7B9F35"
+                                                strokeWidth={3}
+                                                fill="url(#roiGradient)"
+                                                name="Cumulative ROI"
+                                            />
+                                            <Line type="monotone" dataKey="roi" stroke="#00f0ff" strokeWidth={2} dot={{ fill: '#00f0ff', r: 5 }} />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                )}
+                            </div>
+
+                            {/* Risk Factors */}
+                            <div className={styles.riskSection}>
+                                <h4 className={styles.riskTitle}>
+                                    <AlertTriangle size={18} style={{ color: getRiskColor(result.riskAssessment.level) }} />
+                                    {lang === "es" ? "Factores de Riesgo" : lang === "ca" ? "Factors de Risc" : "Risk Factors"}
+                                </h4>
+                                <div className={styles.riskProgress}>
+                                    <div
+                                        className={styles.riskBar}
+                                        style={{
+                                            width: `${result.riskAssessment.score}%`,
+                                            backgroundColor: getRiskColor(result.riskAssessment.level)
+                                        }}
+                                    ></div>
+                                </div>
+                                <ul className={styles.riskList}>
+                                    {result.riskAssessment.factors.map((factor, idx) => (
+                                        <li key={idx}>{factor}</li>
+                                    ))}
+                                </ul>
+                            </div>
+
+                            {/* Export Button */}
+                            <button onClick={handleExport} className={styles.exportBtn}>
+                                <Download size={18} />
+                                {lang === "es" ? "Descargar Informe" : lang === "ca" ? "Descarregar Informe" : "Download Report"}
+                            </button>
                         </div>
                     ) : (
                         <div className={styles.emptyState}>
+                            <TrendingUp size={48} className={styles.emptyIcon} />
                             <p>{t("enterData")}</p>
-                        </div>
-                    )}
-
-                    {data.length > 0 && (
-                        <div style={{ marginTop: '1.5rem' }}>
-                            {!explanation ? (
-                                <button
-                                    onClick={handleExplain}
-                                    className={`glass-button`}
-                                    disabled={explaining}
-                                    style={{
-                                        width: '100%',
-                                        background: 'rgba(124, 58, 237, 0.2)',
-                                        border: '1px solid rgba(124, 58, 237, 0.5)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '10px'
-                                    }}
-                                >
-                                    {explaining ? (
-                                        <>
-                                            <Sparkles className={styles.spin} size={18} />
-                                            {lang === "ca" ? "Processant Anàlisi..." : (lang === "es" ? "Procesando Análisis..." : "Processing Analysis...")}
-                                        </>
-                                    ) : (
-                                        <>
-                                            <BrainCircuit size={18} />
-                                            {lang === "ca" ? "Explicació" : (lang === "es" ? "Explicación" : "Explanation")}
-                                        </>
-                                    )}
-                                </button>
-                            ) : (
-                                <div className="explanation-box" style={{
-                                    marginTop: '1rem',
-                                    padding: '1.5rem',
-                                    background: 'rgba(0,0,0,0.3)',
-                                    borderRadius: '12px',
-                                    borderLeft: '3px solid #8b5cf6',
-                                    textAlign: 'left'
-                                }}>
-                                    <div dangerouslySetInnerHTML={{
-                                        __html: explanation
-                                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                            .replace(/\n\n/g, '<br/><br/>')
-                                            .replace(/\* (.*?)\n/g, '• $1<br/>')
-                                    }} />
-                                </div>
-                            )}
+                            <p className={styles.emptyHint}>
+                                {lang === "es"
+                                    ? `El análisis de ROI será específico para "${seed || 'tu ingrediente'}"`
+                                    : lang === "ca"
+                                        ? `L'anàlisi de ROI serà específic per a "${seed || 'el teu ingredient'}"`
+                                        : `ROI analysis will be specific to "${seed || 'your ingredient'}"`}
+                            </p>
                         </div>
                     )}
                 </section>
-            </div >
-        </div >
+            </div>
+        </div>
     );
 }
