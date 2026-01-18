@@ -4,7 +4,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const apiKey = process.env.GOOGLE_AI_API_KEY;
 
 if (!apiKey) {
-    throw new Error("GOOGLE_AI_API_KEY is not defined in environment variables");
+  throw new Error("GOOGLE_AI_API_KEY is not defined in environment variables");
 }
 
 const genAI = new GoogleGenerativeAI(apiKey);
@@ -16,21 +16,21 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
  * Generate strategic marketing analysis based on asset, market, and budget
  */
 export async function generateStrategyAnalysis(params: {
-    seed: string;
-    market: string;
-    budget: number;
-    campaignType: "impact" | "maintenance";
-    lang: string;
+  seed: string;
+  market: string;
+  budget: number;
+  campaignType: "impact" | "maintenance";
+  lang: string;
 }) {
-    const { seed, market, budget, campaignType, lang } = params;
+  const { seed, market, budget, campaignType, lang } = params;
 
-    const langMap: Record<string, string> = {
-        es: "español",
-        ca: "catalán",
-        en: "inglés"
-    };
+  const langMap: Record<string, string> = {
+    es: "español",
+    ca: "catalán",
+    en: "inglés"
+  };
 
-    const prompt = `Eres un experto estratega de marketing B2B en la industria de ingredientes nutracéuticos y botánicos.
+  const prompt = `Eres un experto estratega de marketing B2B en la industria de ingredientes nutracéuticos y botánicos.
 
 CONTEXTO:
 - Ingrediente/Asset: ${seed}
@@ -73,43 +73,43 @@ FORMATO DE SALIDA (JSON):
   ]
 }`;
 
-    try {
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
 
-        // Parse JSON from the response
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            throw new Error("Invalid JSON response from AI");
-        }
-
-        const parsed = JSON.parse(jsonMatch[0]);
-        return parsed;
-    } catch (error) {
-        console.error("Error generating strategy analysis:", error);
-        throw error;
+    // Parse JSON from the response
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Invalid JSON response from AI");
     }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    return parsed;
+  } catch (error) {
+    console.error("Error generating strategy analysis:", error);
+    throw error;
+  }
 }
 
 /**
  * Generate channel mix recommendations
  */
 export async function generateChannelMix(params: {
-    seed: string;
-    market: string;
-    audience: string;
-    lang: string;
+  seed: string;
+  market: string;
+  audience: string;
+  lang: string;
 }) {
-    const { seed, market, audience, lang } = params;
+  const { seed, market, audience, lang } = params;
 
-    const langMap: Record<string, string> = {
-        es: "español",
-        ca: "catalán",
-        en: "inglés"
-    };
+  const langMap: Record<string, string> = {
+    es: "español",
+    ca: "catalán",
+    en: "inglés"
+  };
 
-    const prompt = `Eres un experto en marketing omnicanal para la industria de ingredientes nutracéuticos B2B.
+  const prompt = `Eres un experto en marketing omnicanal para la industria de ingredientes nutracéuticos B2B.
 
 CONTEXTO:
 - Ingrediente: ${seed}
@@ -144,41 +144,41 @@ FORMATO DE SALIDA (JSON):
   ]
 }`;
 
-    try {
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
 
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            throw new Error("Invalid JSON response from AI");
-        }
-
-        const parsed = JSON.parse(jsonMatch[0]);
-        return parsed.channels;
-    } catch (error) {
-        console.error("Error generating channel mix:", error);
-        throw error;
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Invalid JSON response from AI");
     }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    return parsed.channels;
+  } catch (error) {
+    console.error("Error generating channel mix:", error);
+    throw error;
+  }
 }
 
 /**
  * Generate competitor gap analysis
  */
 export async function generateCompetitorAnalysis(params: {
-    seed: string;
-    competitor: string;
-    lang: string;
+  seed: string;
+  competitor: string;
+  lang: string;
 }) {
-    const { seed, competitor, lang } = params;
+  const { seed, competitor, lang } = params;
 
-    const langMap: Record<string, string> = {
-        es: "español",
-        ca: "catalán",
-        en: "inglés"
-    };
+  const langMap: Record<string, string> = {
+    es: "español",
+    ca: "catalán",
+    en: "inglés"
+  };
 
-    const prompt = `Eres un analista competitivo de la industria nutracéutica y de ingredientes botánicos.
+  const prompt = `Eres un analista competitivo de la industria nutracéutica y de ingredientes botánicos.
 
 CONTEXTO:
 - Nuestro ingrediente: ${seed}
@@ -218,41 +218,41 @@ FORMATO DE SALIDA (JSON):
   "synthesis": "Síntesis estratégica detallada"
 }`;
 
-    try {
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
 
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            throw new Error("Invalid JSON response from AI");
-        }
-
-        const parsed = JSON.parse(jsonMatch[0]);
-        return parsed;
-    } catch (error) {
-        console.error("Error generating competitor analysis:", error);
-        throw error;
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Invalid JSON response from AI");
     }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    return parsed;
+  } catch (error) {
+    console.error("Error generating competitor analysis:", error);
+    throw error;
+  }
 }
 
 /**
  * Generate deep dive implementation guide
  */
 export async function generateDeepDive(params: {
-    strategy: any;
-    seed: string;
-    lang: string;
+  strategy: any;
+  seed: string;
+  lang: string;
 }) {
-    const { strategy, seed, lang } = params;
+  const { strategy, seed, lang } = params;
 
-    const langMap: Record<string, string> = {
-        es: "español",
-        ca: "catalán",
-        en: "inglés"
-    };
+  const langMap: Record<string, string> = {
+    es: "español",
+    ca: "catalán",
+    en: "inglés"
+  };
 
-    const prompt = `Eres un consultor de implementación estratégica para marketing B2B en nutracéuticos.
+  const prompt = `Eres un consultor de implementación estratégica para marketing B2B en nutracéuticos.
 
 CONTEXTO:
 Basándote en esta estrategia ya generada:
@@ -289,32 +289,32 @@ USA FORMATO MARKDOWN:
 
 Devuelve SOLO el contenido markdown, sin JSON.`;
 
-    try {
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        return response.text();
-    } catch (error) {
-        console.error("Error generating deep dive:", error);
-        throw error;
-    }
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+    console.error("Error generating deep dive:", error);
+    throw error;
+  }
 }
 
 /**
  * Generate gap detection and tactical response analysis - returns 3 gaps with relevance scores
  */
 export async function generateGapDetection(params: {
-    seed: string;
-    lang: string;
+  seed: string;
+  lang: string;
 }) {
-    const { seed, lang } = params;
+  const { seed, lang } = params;
 
-    const langMap: Record<string, string> = {
-        es: "español",
-        ca: "catalán",
-        en: "inglés"
-    };
+  const langMap: Record<string, string> = {
+    es: "español",
+    ca: "catalán",
+    en: "inglés"
+  };
 
-    const prompt = `Eres un estratega de marketing B2B especializado en detección de oportunidades de mercado para la industria nutracéutica.
+  const prompt = `Eres un estratega de marketing B2B especializado en detección de oportunidades de mercado para la industria nutracéutica.
 
 CONTEXTO:
 - Ingrediente/Asset analizado: ${seed}
@@ -369,46 +369,46 @@ FORMATO DE SALIDA (JSON):
   ]
 }`;
 
-    try {
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
 
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            throw new Error("Invalid JSON response from AI");
-        }
-
-        const parsed = JSON.parse(jsonMatch[0]);
-        return parsed;
-    } catch (error) {
-        console.error("Error generating gap detection:", error);
-        throw error;
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Invalid JSON response from AI");
     }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    return parsed;
+  } catch (error) {
+    console.error("Error generating gap detection:", error);
+    throw error;
+  }
 }
 
 /**
  * Generate comprehensive ROI analysis based on the seed/asset
  */
 export async function generateROIAnalysis(params: {
-    seed: string;
-    investment: number;
-    projectedRevenue: number;
-    region: string;
-    sector: string;
-    lang: string;
+  seed: string;
+  investment: number;
+  projectedRevenue: number;
+  region: string;
+  sector: string;
+  lang: string;
 }) {
-    const { seed, investment, projectedRevenue, region, sector, lang } = params;
+  const { seed, investment, projectedRevenue, region, sector, lang } = params;
 
-    const langMap: Record<string, string> = {
-        es: "español",
-        ca: "catalán",
-        en: "inglés"
-    };
+  const langMap: Record<string, string> = {
+    es: "español",
+    ca: "catalán",
+    en: "inglés"
+  };
 
-    const multiplier = projectedRevenue / (investment || 1);
+  const multiplier = projectedRevenue / (investment || 1);
 
-    const prompt = `Eres un analista financiero especializado en inversiones de marketing para ingredientes nutracéuticos B2B.
+  const prompt = `Eres un analista financiero especializado en inversiones de marketing para ingredientes nutracéuticos B2B.
 
 CONTEXTO:
 - Ingrediente/Asset: ${seed}
@@ -488,20 +488,141 @@ FORMATO DE SALIDA (JSON):
   }
 }`;
 
-    try {
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
 
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            throw new Error("Invalid JSON response from AI");
-        }
-
-        const parsed = JSON.parse(jsonMatch[0]);
-        return parsed;
-    } catch (error) {
-        console.error("Error generating ROI analysis:", error);
-        throw error;
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Invalid JSON response from AI");
     }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    return parsed;
+  } catch (error) {
+    console.error("Error generating ROI analysis:", error);
+    throw error;
+  }
+}
+
+/**
+ * Generate detailed timeline roadmap based on the seed/asset
+ */
+export async function generateTimelineRoadmap(params: {
+  seed: string;
+  campaignType: "Impact" | "Maintenance";
+  startDate: string;
+  market?: string;
+  lang: string;
+}) {
+  const { seed, campaignType, startDate, market, lang } = params;
+
+  const langMap: Record<string, string> = {
+    es: "español",
+    ca: "catalán",
+    en: "inglés"
+  };
+
+  const startDateObj = new Date(startDate);
+  const formattedDate = startDateObj.toLocaleDateString(lang === 'es' ? 'es-ES' : lang === 'ca' ? 'ca-ES' : 'en-US', { year: 'numeric', month: 'long' });
+
+  const prompt = `Eres un estratega de marketing B2B especializado en lanzamientos de ingredientes nutracéuticos y botánicos.
+
+CONTEXTO:
+- Ingrediente/Asset: ${seed}
+- Tipo de campaña: ${campaignType === "Impact" ? "Alto Impacto (Lanzamiento/Penetración)" : "Mantenimiento de Marca (Fidelización)"}
+- Fecha de inicio: ${formattedDate}
+${market ? `- Mercado objetivo: ${market}` : ""}
+
+TAREA:
+Genera una hoja de ruta de marketing detallada y específica para "${seed}" en ${langMap[lang] || "español"}.
+
+${campaignType === "Impact" ? `
+Para una campaña de IMPACTO (lanzamiento), incluye:
+- Fase de pre-lanzamiento (preparación de materiales, PR)
+- Lanzamiento coordinado (digital + eventos)
+- Validación técnica (webinars, white papers)
+- Conversión (sampling, reuniones comerciales)
+- Consolidación (case studies, testimoniales)
+` : `
+Para una campaña de MANTENIMIENTO, incluye:
+- Refuerzo de credenciales y certificaciones
+- Publicación de casos de éxito
+- Comunicación de innovaciones incrementales
+- Renovación de acuerdos con clientes
+- Planificación del siguiente ciclo
+`}
+
+Proporciona:
+
+1. **milestones**: Array de 5-7 hitos con:
+   - phase: Número de fase ("Fase 1", "Phase 1", etc.)
+   - monthOffset: Meses desde la fecha de inicio (0, 1, 2, 3...)
+   - title: Título descriptivo y específico para ${seed}
+   - description: Descripción detallada (3-5 líneas) con tácticas concretas, mencionando el ingrediente
+   - keyActions: Array de 3-4 acciones específicas a realizar
+   - kpis: Array de 2-3 KPIs para medir el éxito de esta fase
+   - budget: Porcentaje del presupuesto total para esta fase (suma = 100)
+
+2. **criticalDeadlines**: Array de 1-3 deadlines críticos:
+   - date: Fecha aproximada o mes
+   - title: Título del deadline
+   - description: Por qué es crítico
+   - urgency: "high", "medium" o "low"
+
+3. **recommendations**: Array de 3 recomendaciones estratégicas generales
+
+IMPORTANTE:
+- Menciona el ingrediente "${seed}" en los títulos y descripciones
+- Incluye eventos relevantes del sector (Vitafoods Europe mayo-junio, SupplySide West octubre-noviembre, CPhI noviembre)
+- Menciona publicaciones específicas (NutraIngredients, Nutraceuticals World, Food Technology Magazine)
+- Sé específico con las tácticas: tipos de contenido, canales, formatos
+- Las acciones deben ser accionables y medibles
+- Adapta el contenido al tipo de campaña (Impact vs Maintenance)
+
+FORMATO DE SALIDA (JSON):
+{
+  "milestones": [
+    {
+      "phase": "Fase 1",
+      "monthOffset": 0,
+      "title": "Pre-lanzamiento de ${seed}",
+      "description": "Descripción detallada...",
+      "keyActions": ["Acción 1", "Acción 2", "Acción 3"],
+      "kpis": ["KPI 1", "KPI 2"],
+      "budget": 20
+    }
+  ],
+  "criticalDeadlines": [
+    {
+      "date": "Mayo 2025",
+      "title": "Vitafoods Europe",
+      "description": "...",
+      "urgency": "high"
+    }
+  ],
+  "recommendations": [
+    "Recomendación 1",
+    "Recomendación 2",
+    "Recomendación 3"
+  ]
+}`;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Invalid JSON response from AI");
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    return parsed;
+  } catch (error) {
+    console.error("Error generating timeline roadmap:", error);
+    throw error;
+  }
 }

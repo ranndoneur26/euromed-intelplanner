@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Target, Sparkles, AlertCircle, CheckCircle, Zap } from "lucide-react";
+import { Target, Sparkles, AlertCircle, CheckCircle, Zap, BarChart3, PieChart } from "lucide-react";
+import {
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+    PieChart as RechartsPieChart, Pie, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis
+} from "recharts";
 import styles from "./page.module.css";
 import { useLanguage } from "@/context/LanguageContext";
 import { useGravity } from "@/context/GravityContext";
@@ -17,6 +21,8 @@ interface StrategyResult {
     recommendations: Recommendation[];
 }
 
+const COLORS = ['#7B9F35', '#377cbc', '#00f0ff', '#f59e0b', '#8b5cf6', '#ec4899'];
+
 export default function StrategyPage() {
     const { t, lang } = useLanguage();
     const { seed, completeStep, setBudget: setContextBudget } = useGravity();
@@ -28,6 +34,53 @@ export default function StrategyPage() {
     const [deepDiveResult, setDeepDiveResult] = useState("");
     const [result, setResult] = useState<StrategyResult | null>(null);
     const [error, setError] = useState("");
+    const [activeChart, setActiveChart] = useState<"budget" | "priority" | "radar">("budget");
+
+    // Generate budget distribution data based on campaign type
+    const getBudgetDistributionData = () => {
+        const budgetValue = parseFloat(budget) || 0;
+        if (campaignType === "impact") {
+            return [
+                { name: lang === "es" ? "Publicidad Digital" : lang === "ca" ? "Publicitat Digital" : "Digital Advertising", value: Math.round(budgetValue * 0.35), percentage: 35 },
+                { name: lang === "es" ? "Contenido" : lang === "ca" ? "Contingut" : "Content", value: Math.round(budgetValue * 0.25), percentage: 25 },
+                { name: lang === "es" ? "Eventos/Ferias" : lang === "ca" ? "Esdeveniments/Fires" : "Events/Trade Shows", value: Math.round(budgetValue * 0.20), percentage: 20 },
+                { name: "PR & Comunicación", value: Math.round(budgetValue * 0.12), percentage: 12 },
+                { name: lang === "es" ? "Análisis/Herramientas" : lang === "ca" ? "Anàlisi/Eines" : "Analytics/Tools", value: Math.round(budgetValue * 0.08), percentage: 8 }
+            ];
+        } else {
+            return [
+                { name: lang === "es" ? "SEO & Contenido" : lang === "ca" ? "SEO & Contingut" : "SEO & Content", value: Math.round(budgetValue * 0.30), percentage: 30 },
+                { name: lang === "es" ? "Redes Sociales" : lang === "ca" ? "Xarxes Socials" : "Social Media", value: Math.round(budgetValue * 0.25), percentage: 25 },
+                { name: "Email Marketing", value: Math.round(budgetValue * 0.20), percentage: 20 },
+                { name: lang === "es" ? "Retargeting" : lang === "ca" ? "Retargeting" : "Retargeting", value: Math.round(budgetValue * 0.15), percentage: 15 },
+                { name: lang === "es" ? "Branding" : lang === "ca" ? "Branding" : "Branding", value: Math.round(budgetValue * 0.10), percentage: 10 }
+            ];
+        }
+    };
+
+    // Generate priority data for recommendations
+    const getPriorityData = () => {
+        if (!result) return [];
+        return result.recommendations.map((rec, idx) => ({
+            name: rec.title.substring(0, 25) + (rec.title.length > 25 ? "..." : ""),
+            priority: 100 - (idx * 15),
+            impact: 85 - (idx * 10),
+            effort: 40 + (idx * 12)
+        }));
+    };
+
+    // Generate radar data for strategic assessment
+    const getRadarData = () => {
+        const isImpact = campaignType === "impact";
+        return [
+            { subject: lang === "es" ? "Alcance" : lang === "ca" ? "Abast" : "Reach", A: isImpact ? 90 : 60, fullMark: 100 },
+            { subject: lang === "es" ? "Engagement" : lang === "ca" ? "Engagement" : "Engagement", A: isImpact ? 75 : 85, fullMark: 100 },
+            { subject: lang === "es" ? "Conversión" : lang === "ca" ? "Conversió" : "Conversion", A: isImpact ? 65 : 70, fullMark: 100 },
+            { subject: "ROI", A: isImpact ? 70 : 80, fullMark: 100 },
+            { subject: lang === "es" ? "Velocidad" : lang === "ca" ? "Velocitat" : "Speed", A: isImpact ? 85 : 50, fullMark: 100 },
+            { subject: lang === "es" ? "Sostenibilidad" : lang === "ca" ? "Sostenibilitat" : "Sustainability", A: isImpact ? 55 : 90, fullMark: 100 }
+        ];
+    };
 
     const handleGenerate = async (e: React.FormEvent) => {
         e.preventDefault();
