@@ -20,11 +20,11 @@ const translations: Record<Language, Record<string, string>> = {
         "rivalIntel": "Rival Intel",
         "welcome": "Welcome to your advanced market intelligence dashboard.",
         "subtitle": "Select a module to begin strategic planning.",
-        "footer": "Euromed IntelPlanner. Powered by Gemini 3 Pro.",
+        "footer": "Euromed IntelPlanner. Advanced Marketing Intelligence.",
 
         // Strategy
         "strategicPlanning": "Strategic Planning",
-        "strategySubtitle": "Define your mission and receive strategic marketing directives.",
+        "strategySubtitle": "Euromed © Intelligent strategic marketing directives.",
         "inputParameters": "Input Parameters",
         "strategicAsset": "Strategic Asset/Fair/Brochures",
         "campaignType": "Campaign Type",
@@ -39,7 +39,7 @@ const translations: Record<Language, Record<string, string>> = {
         "downloadReport": "Download Report (.txt)",
         "minBudgetError": "Minimum budget required is €5,000 EUR to ensure viable strategic impact.",
         "expandInfo": "Expand Information (Deep Dive)",
-        "processingDual": "Deep Learning: Integrating Gemini & Perplexity Models...",
+        "processingDual": "Deep Learning: Processing AI Models...",
         "implementationGuide": "Strategic Implementation Guide",
         "deepDiveTitle": "Dual-AI Deep Dive Analysis",
 
@@ -87,7 +87,11 @@ const translations: Record<Language, Record<string, string>> = {
         "dimension": "Dimension",
         "euromedPosition": "Euromed Position",
         "verdict": "Verdict",
-        "competitor": "Competitor"
+        "competitor": "Competitor",
+        "detectGaps": "Detect Gaps",
+        "detectingGaps": "Detecting Gaps...",
+        "detectedGap": "Detected Gap",
+        "tacticalResponse": "Tactical Response"
     },
     es: {
         "dashboard": "Panel de Control",
@@ -98,11 +102,11 @@ const translations: Record<Language, Record<string, string>> = {
         "rivalIntel": "Intel Rival",
         "welcome": "Bienvenido a su panel de inteligencia de mercado avanzada.",
         "subtitle": "Seleccione un módulo para comenzar la planificación estratégica.",
-        "footer": "Euromed IntelPlanner. Impulsado por Gemini 3 Pro.",
+        "footer": "Euromed IntelPlanner. Inteligencia de Marketing Avanzada.",
 
         // Strategy
         "strategicPlanning": "Planificación Estratégica",
-        "strategySubtitle": "Defina su misión y reciba directrices estratégicas de marketing.",
+        "strategySubtitle": "Euromed © directrices estratégicas inteligentes de marketing.",
         "inputParameters": "Parámetros de Entrada",
         "strategicAsset": "Activo Estratégico/Feria/Brochures",
         "campaignType": "Tipo de Campaña",
@@ -117,7 +121,7 @@ const translations: Record<Language, Record<string, string>> = {
         "downloadReport": "Descargar Informe (.txt)",
         "minBudgetError": "El presupuesto mínimo requerido es de €5,000 EUR para asegurar un impacto estratégico viable.",
         "expandInfo": "Ampliar Información (Deep Dive)",
-        "processingDual": "Deep Learning: Integrando Modelos Gemini y Perplexity...",
+        "processingDual": "Deep Learning: Procesando Modelos de IA...",
         "implementationGuide": "Guía de Implementación Estratégica",
         "deepDiveTitle": "Análisis Deep Dive (Dual-AI)",
 
@@ -165,7 +169,11 @@ const translations: Record<Language, Record<string, string>> = {
         "dimension": "Dimensión",
         "euromedPosition": "Posición Euromed",
         "verdict": "Veredicto",
-        "competitor": "Competidor"
+        "competitor": "Competidor",
+        "detectGaps": "Gaps Detectados",
+        "detectingGaps": "Detectando Gaps...",
+        "detectedGap": "Gap Detectado",
+        "tacticalResponse": "Respuesta Táctica"
     },
     ca: {
         "dashboard": "Tauler de Control",
@@ -176,11 +184,11 @@ const translations: Record<Language, Record<string, string>> = {
         "rivalIntel": "Intel Rival",
         "welcome": "Benvingut al vostre tauler d'intel·ligència de mercat avançat.",
         "subtitle": "Seleccioneu un mòdul per començar la planificació estratègica.",
-        "footer": "Euromed IntelPlanner. Impulsat per Gemini 3 Pro.",
+        "footer": "Euromed IntelPlanner. Intel·ligència de Màrqueting Avançada.",
 
         // Strategy
         "strategicPlanning": "Planificació Estratègica",
-        "strategySubtitle": "Definiu la vostra missió i rebeu directrius estratègiques de màrqueting.",
+        "strategySubtitle": "Euromed © directrius estratègiques intel·ligents de màrqueting.",
         "inputParameters": "Paràmetres d'Entrada",
         "strategicAsset": "Actiu Estratègic/Fira/Fullets",
         "campaignType": "Tipus de Campanya",
@@ -195,7 +203,7 @@ const translations: Record<Language, Record<string, string>> = {
         "downloadReport": "Descarregar Informe (.txt)",
         "minBudgetError": "El pressupost mínim requerit és de €5,000 EUR per assegurar un impacte estratègic viable.",
         "expandInfo": "Ampliar Informació (Deep Dive)",
-        "processingDual": "Deep Learning: Integrant Models Gemini i Perplexity...",
+        "processingDual": "Deep Learning: Processant Models d'IA...",
         "implementationGuide": "Guia d'Implementació Estratègica",
         "deepDiveTitle": "Anàlisi Deep Dive (Dual-AI)",
 
@@ -243,7 +251,11 @@ const translations: Record<Language, Record<string, string>> = {
         "dimension": "Dimensió",
         "euromedPosition": "Posició Euromed",
         "verdict": "Veredicte",
-        "competitor": "Competidor"
+        "competitor": "Competidor",
+        "detectGaps": "Gaps Detectats",
+        "detectingGaps": "Detectant Gaps...",
+        "detectedGap": "Gap Detectat",
+        "tacticalResponse": "Resposta Tàctica"
     }
 };
 

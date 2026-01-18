@@ -17,6 +17,8 @@ interface Step {
 interface GravityContextType {
     seed: string; // The "Core Entity"
     setSeed: (seed: string) => void;
+    budget: number; // Budget from Strategy module
+    setBudget: (budget: number) => void;
     steps: Step[];
     unlockStep: (stepId: string) => void;
     completeStep: (stepId: string, data: any) => void;
@@ -38,6 +40,7 @@ const INITIAL_STEPS: Step[] = [
 
 export function GravityProvider({ children }: { children: React.ReactNode }) {
     const [seed, setSeedState] = useState("");
+    const [budget, setBudget] = useState(0);
     const [steps, setSteps] = useState<Step[]>(INITIAL_STEPS);
     const router = useRouter();
 
@@ -86,7 +89,7 @@ export function GravityProvider({ children }: { children: React.ReactNode }) {
     const currentStepIndex = steps.findIndex(s => s.status === 'active');
 
     return (
-        <GravityContext.Provider value={{ seed, setSeed, steps, completeStep, resetChain, unlockStep, currentStepIndex }}>
+        <GravityContext.Provider value={{ seed, setSeed, budget, setBudget, steps, completeStep, resetChain, unlockStep, currentStepIndex }}>
             {children}
         </GravityContext.Provider>
     );

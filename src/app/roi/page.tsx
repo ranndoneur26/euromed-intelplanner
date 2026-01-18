@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TrendingUp, Sparkles, AlertTriangle, Zap, BrainCircuit } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import styles from "./page.module.css";
@@ -9,7 +9,7 @@ import { useGravity } from "@/context/GravityContext";
 
 export default function ROIPage() {
     const { t, lang } = useLanguage();
-    const { seed, completeStep } = useGravity();
+    const { seed, budget: contextBudget, completeStep } = useGravity();
     const [investment, setInvestment] = useState("");
     const [revenue, setRevenue] = useState("");
     const [data, setData] = useState<any[]>([]);
@@ -17,8 +17,17 @@ export default function ROIPage() {
     const [risk, setRisk] = useState<string | null>(null);
     const [region, setRegion] = useState("EMEA");
     const [sector, setSector] = useState("General");
+    const [customRegion, setCustomRegion] = useState("");
+    const [customSector, setCustomSector] = useState("");
     const [explaining, setExplaining] = useState(false);
     const [explanation, setExplanation] = useState("");
+
+    // Auto-fill investment from Strategy's budget
+    useEffect(() => {
+        if (contextBudget > 0 && !investment) {
+            setInvestment(contextBudget.toString());
+        }
+    }, [contextBudget, investment]);
 
     const handleCalculate = (e: React.FormEvent) => {
         e.preventDefault();
@@ -115,9 +124,11 @@ export default function ROIPage() {
             const currentInvest = parseFloat(investment) || 0;
             const currentRev = parseFloat(revenue) || 0;
             const roiRatio = (currentRev / (currentInvest || 1)).toFixed(2);
+            const actualRegion = region === "Other" ? customRegion : region;
+            const actualSector = sector === "Other" ? customSector : sector;
 
             if (lang === "ca") {
-                content = `**ANÀLISI EXPERT DE FLUX DE CAIXA I ESTRATÈGIA (DUAL-AI: GEMINI + PERPLEXITY)**
+                content = `**ANÀLISI EXPERT DE FLUX DE CAIXA I ESTRATÈGIA**
 
 **1. Descodificació de la Gràfica (Q1-Q4):**
 La distribució de la inversió mostra una estratègia de **"Front-Loading"** (40% al Q1), típica de llançaments agressius per a ${seed}.
@@ -126,14 +137,14 @@ La distribució de la inversió mostra una estratègia de **"Front-Loading"** (4
 
 **2. Valoració del Multiplicador (${roiRatio}x):**
 En el sector Nutracèutic (${sector}), un rati de ${roiRatio}x es considera **${parseFloat(roiRatio) > 4 ? "EXCEL·LENT" : (parseFloat(roiRatio) > 2 ? "SÒLID" : "ARRISCAT")}**.
-*   **Gemini Insight:** Amb aquest pressupost (${currentInvest.toLocaleString()}€), estàs competint per "Share of Voice", no per "Share of Market" massiu. L'eficiència és clau.
+*   **Insight d'IA:** Amb aquest pressupost (${currentInvest.toLocaleString()}€), estàs competint per "Share of Voice", no per "Share of Market" massiu. L'eficiència és clau.
 
 **3. Consell Estratègic (The "Smart Move"):**
 *   **Recomanació:** No dilueixis el pressupost del Q1. Si el Q1 falla, el Q4 no arribarà.
 *   **Tactical Shift:** Considera moure un 5% del pressupost de Q3 a Q1 per assegurar materials de venda (Sales Kits) més robustos abans de les primeres reunions.
-*   **Advertència Perplexity:** Els competidors en ${region} solen augmentar la despesa digital al Q2. Assegura't de tenir "Always-on" a LinkedIn per no perdre tracció al mig de l'any.`;
+*   **Advertència:** Els competidors en ${region} solen augmentar la despesa digital al Q2. Assegura't de tenir "Always-on" a LinkedIn per no perdre tracció al mig de l'any.`;
             } else if (lang === "es") {
-                content = `**ANÁLISIS EXPERTO DE FLUJO DE CAJA Y ESTRATEGIA (DUAL-AI: GEMINI + PERPLEXITY)**
+                content = `**ANÁLISIS EXPERTO DE FLUJO DE CAJA Y ESTRATEGIA**
 
 **1. Descodificación de la Gráfica (Q1-Q4):**
 La distribución de la inversión muestra una estrategia de **"Front-Loading"** (40% en Q1), típica de lanzamientos agresivos para ${seed}.
@@ -142,14 +153,14 @@ La distribución de la inversión muestra una estrategia de **"Front-Loading"** 
 
 **2. Valoración del Multiplicador (${roiRatio}x):**
 En el sector Nutracéutico (${sector}), un ratio de ${roiRatio}x se considera **${parseFloat(roiRatio) > 4 ? "EXCELENTE" : (parseFloat(roiRatio) > 2 ? "SÓLIDO" : "ARRIESGADO")}**.
-*   **Gemini Insight:** Con este presupuesto (${currentInvest.toLocaleString()}€), estás compitiendo por "Share of Voice", no por "Share of Market" masivo. La eficiencia es clave.
+*   **Insight de IA:** Con este presupuesto (${currentInvest.toLocaleString()}€), estás compitiendo por "Share of Voice", no por "Share of Market" masivo. La eficiencia es clave.
 
 **3. Consejo Estratégico (The "Smart Move"):**
 *   **Recomendación:** No diluyas el presupuesto del Q1. Si el Q1 falla, el Q4 no llegará.
 *   **Tactical Shift:** Considera mover un 5% del presupuesto de Q3 a Q1 para asegurar materiales de venta (Sales Kits) más robustos antes de las primeras reuniones.
-*   **Advertencia Perplexity:** Los competidores en ${region} suelen aumentar el gasto digital en Q2. Asegúrate de tener "Always-on" en LinkedIn para no perder tracción a mitad de año.`;
+*   **Advertencia:** Los competidores en ${region} suelen aumentar el gasto digital en Q2. Asegúrate de tener "Always-on" en LinkedIn para no perder tracción a mitad de año.`;
             } else {
-                content = `**EXPERT CASH FLOW & STRATEGY ANALYSIS (DUAL-AI: GEMINI + PERPLEXITY)**
+                content = `**EXPERT CASH FLOW & STRATEGY ANALYSIS**
 
 **1. Graph Decoding (Q1-Q4):**
 The investment distribution shows a **"Front-Loading"** strategy (40% in Q1), typical of aggressive launches for ${seed}.
@@ -158,12 +169,12 @@ The investment distribution shows a **"Front-Loading"** strategy (40% in Q1), ty
 
 **2. Multiplier Assessment (${roiRatio}x):**
 In the Nutraceutical sector (${sector}), a ratio of ${roiRatio}x is considered **${parseFloat(roiRatio) > 4 ? "EXCELLENT" : (parseFloat(roiRatio) > 2 ? "SOLID" : "RISKY")}**.
-*   **Gemini Insight:** With this budget (${currentInvest.toLocaleString()}€), you are competing for "Share of Voice", not massive "Share of Market". Efficiency is key.
+*   **AI Insight:** With this budget (${currentInvest.toLocaleString()}€), you are competing for "Share of Voice", not massive "Share of Market". Efficiency is key.
 
 **3. Strategic Advice (The "Smart Move"):**
 *   **Recommendation:** Do not dilute Q1 budget. If Q1 fails, Q4 won't happen.
 *   **Tactical Shift:** Consider moving 5% of Q3 budget to Q1 to ensure more robust Sales Kits before initial meetings.
-*   **Perplexity Warning:** Competitors in ${region} tend to increase digital spend in Q2. Ensure "Always-on" presence on LinkedIn to avoid losing traction mid-year.`;
+*   **Warning:** Competitors in ${region} tend to increase digital spend in Q2. Ensure "Always-on" presence on LinkedIn to avoid losing traction mid-year.`;
             }
 
             setExplanation(content);
@@ -178,7 +189,10 @@ In the Nutraceutical sector (${sector}), a ratio of ${roiRatio}x is considered *
                     <TrendingUp size={40} />
                 </div>
                 <div>
-                    <h1 className={styles.title}>{t("roiAnalysis")}</h1>
+                    <h1 className={styles.title}>
+                        {seed && <span style={{ opacity: 0.7 }}>{seed}: </span>}
+                        {t("roiAnalysis")}
+                    </h1>
                     <p className={styles.subtitle}>{t("roiSubtitle")}</p>
                 </div>
             </header>
@@ -193,16 +207,44 @@ In the Nutraceutical sector (${sector}), a ratio of ${roiRatio}x is considered *
                                 <option value="EMEA">EMEA (Europe, Middle East, Africa)</option>
                                 <option value="APAC">APAC (Asia Pacific)</option>
                                 <option value="NA">North America</option>
+                                <option value="Other">{lang === "es" ? "Otro" : lang === "ca" ? "Altre" : "Other"}</option>
                             </select>
                         </div>
+                        {region === "Other" && (
+                            <div className={styles.inputGroup}>
+                                <label className={styles.label}>{lang === "es" ? "Especificar Mercado" : lang === "ca" ? "Especificar Mercat" : "Specify Market"}</label>
+                                <input
+                                    className={styles.input}
+                                    type="text"
+                                    value={customRegion}
+                                    onChange={e => setCustomRegion(e.target.value)}
+                                    placeholder={lang === "es" ? "Ej: América Latina" : lang === "ca" ? "Ex: Amèrica Llatina" : "e.g. Latin America"}
+                                    required
+                                />
+                            </div>
+                        )}
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>{t("sector") || "Sector"}</label>
                             <select className={styles.input} value={sector} onChange={e => setSector(e.target.value)}>
                                 <option value="General">General / Pharma</option>
                                 <option value="Plant-based">Plant-based / Meat Alternatives</option>
                                 <option value="Immune">Immune Health</option>
+                                <option value="Other">{lang === "es" ? "Otro" : lang === "ca" ? "Altre" : "Other"}</option>
                             </select>
                         </div>
+                        {sector === "Other" && (
+                            <div className={styles.inputGroup}>
+                                <label className={styles.label}>{lang === "es" ? "Especificar Sector" : lang === "ca" ? "Especificar Sector" : "Specify Sector"}</label>
+                                <input
+                                    className={styles.input}
+                                    type="text"
+                                    value={customSector}
+                                    onChange={e => setCustomSector(e.target.value)}
+                                    placeholder={lang === "es" ? "Ej: Cosmética Natural" : lang === "ca" ? "Ex: Cosmètica Natural" : "e.g. Natural Cosmetics"}
+                                    required
+                                />
+                            </div>
+                        )}
                         <div className={styles.inputGroup}>
                             <label className={styles.label}>{t("totalInvestment")}</label>
                             <input className={styles.input} type="number" value={investment} onChange={e => setInvestment(e.target.value)} placeholder="Min $5000" required />

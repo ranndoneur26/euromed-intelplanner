@@ -125,54 +125,54 @@ export default function TimelinePage() {
             let content = "";
 
             if (lang === "es") {
-                content = `**ANÁLISIS DETALLADO PASO A PASO - DUAL-AI (GEMINI + PERPLEXITY)**\n\n**CONTEXTO GENERAL:**\nLa hoja de ruta generada para ${seed} sigue una metodología de "${campaignType}" con ${milestones.length} hitos clave. Cada fase ha sido diseñada para maximizar el impacto en base a datos empíricos del sector Nutracéutico.\n\n`;
+                content = `**ANÁLISIS DETALLADO PASO A PASO**\n\n**CONTEXTO GENERAL:**\nLa hoja de ruta generada para ${seed} sigue una metodología de "${campaignType}" con ${milestones.length} hitos clave. Cada fase ha sido diseñada para maximizar el impacto en base a datos empíricos del sector Nutracéutico.\n\n`;
 
                 milestones.forEach((m, idx) => {
                     content += `---\n\n**${m.phase.toUpperCase()}: ${m.title}**\n*Fecha Objetivo:* ${m.date}\n\n`;
 
                     if (m.title.includes("Activación") || m.title.includes("Trend Velocity")) {
-                        content += `**Desglose Táctico (Gemini Deep Dive):**\n`;
-                        content += `* **¿Por qué 48 horas?** Los estudios de "Share of Voice" en LinkedIn (Perplexity Research) muestran que el 72% del engagement ocurre en las primeras 48h de publicación. La saturación inmediata crea un efecto de "FOMO" (Fear of Missing Out) en R&D directors.\n`;
+                        content += `**Desglose Táctico:**\n`;
+                        content += `* **¿Por qué 48 horas?** Los estudios de "Share of Voice" en LinkedIn muestran que el 72% del engagement ocurre en las primeras 48h de publicación. La saturación inmediata crea un efecto de "FOMO" (Fear of Missing Out) en R&D directors.\n`;
                         content += `* **Implementación Práctica:** Programar 3 posts separados por 8h (LinkedIn Scheduler). Post 1: "Thought Leadership" (6 AM GMT), Post 2: Video Testimonial (2 PM GMT), Post 3: Infographic (10 PM GMT).\n`;
                         content += `* **Métricas de Éxito:** >500 impresiones por post, >15% engagement rate, >10 InMails directos de decisores.\n\n`;
                     } else if (m.title.includes("Validación Técnica") || m.title.includes("Webinar")) {
-                        content += `**Desglose Táctico (Gemini Deep Dive):**\n`;
+                        content += `**Desglose Táctico:**\n`;
                         content += `* **Formato Recomendado:** Webinar de 45 min estructurado como: 15 min presentación, 20 min "Live Demo" (análisis de espectros HPLC en tiempo real), 10 min Q&A.\n`;
-                        content += `* **Perplexity Insight:** Los webinars con "Live Demo" tienen un 35% más de conversión a MQL que las presentaciones estáticas (fuente: Content Marketing Institute 2024).\n`;
+                        content += `* **Insight de IA:** Los webinars con "Live Demo" tienen un 35% más de conversión a MQL que las presentaciones estáticas (fuente: Content Marketing Institute 2024).\n`;
                         content += `* **Riesgo y Mitigación:** Si la asistencia es <25 personas, ofrecer grabación privada a no-asistentes con CTA urgente ("Acceso válido por 7 días").\n\n`;
                     } else if (m.title.includes("Conversión") || m.title.includes("Sampling")) {
-                        content += `**Desglose Táctico (Gemini Deep Dive):**\n`;
+                        content += `**Desglose Táctico:**\n`;
                         content += `* **Composición del Kit:** No enviar solo el ingrediente puro. Incluir: (1) Muestra de 50g, (2) Formulación sugerida para gummy (PDF), (3) Certificado COA, (4) Tarjeta personalizada del Director Técnico de Euromed.\n`;
-                        content += `* **Logística Crítica:** Usar DHL Express (no estándar). El 68% de los buyers asocian velocidad de envío con "seriedad comercial" (Perplexity Data).\n`;
+                        content += `* **Logística Crítica:** Usar DHL Express (no estándar). El 68% de los buyers asocian velocidad de envío con "seriedad comercial".\n`;
                         content += `* **Follow-up Agresivo:** Llamada telefónica 3 días post-entrega. No email. El contacto directo aumenta conversión en 40%.\n\n`;
                     } else if (m.title.includes("Refuerzo de Credenciales") || m.title.includes("Credential")) {
-                        content += `**Desglose Táctico (Gemini Deep Dive):**\n`;
+                        content += `**Desglose Táctico:**\n`;
                         content += `* **Visualización:** Crear infografía comparativa mostrando certificaciones de Euromed vs. promedio del sector. El contenido visual genera 3x más shares.\n`;
                         content += `* **Canal Prioritario:** LinkedIn Company Page + Retargeting a visitantes del sitio web de los últimos 90 días.\n`;
                         content += `* **Mensaje Clave:** "Partnership Seguro = Zero Recalls". Usar datos de trazabilidad Camp to Lab como prueba.\n\n`;
                     } else if (m.title.includes("Casos de Éxito") || m.title.includes("Success Stories")) {
-                        content += `**Desglose Táctico (Gemini Deep Dive):**\n`;
+                        content += `**Desglose Táctico:**\n`;
                         content += `* **Storytelling:** Estructurar el caso como: (1) Desafío del cliente, (2) Solución técnica de Euromed, (3) Resultado cuantificable (ej. "reducción del 30% en tiempo de formulación").\n`;
-                        content += `* **Perplexity Insight:** Los case studies con datos cuantitativos tienen un 58% más de credibilidad percibida.\n`;
+                        content += `* **Insight de IA:** Los case studies con datos cuantitativos tienen un 58% más de credibilidad percibida.\n`;
                         content += `* **Formato:** Video corto (90 seg) + Blog post detallado. Priorizar video para redes sociales.\n\n`;
                     } else if (m.title.includes("DEADLINE")) {
-                        content += `**ACCIÓN URGENTE (Perplexity Alert):**\n`;
+                        content += `**ACCIÓN URGENTE:**\n`;
                         content += `* **Deadline Editorial:** El cierre del 28 de Octubre es INAMOVIBLE. Cualquier retraso significa 12 meses de espera para la siguiente edición.\n`;
                         content += `* **Acción Inmediata:** Redactar el press release HOY. Usar template de NutraIngredients (disponible en su Media Kit). Enviar draft a editor 7 días antes del deadline (margen de seguridad).\n`;
                         content += `* **Contenido Recomendado:** Enfocarse en "Innovación Sostenible" (palabra clave de moda en Q4 2024-2025).\n\n`;
                     } else {
-                        content += `**Desglose Táctico (Gemini Deep Dive):**\n`;
+                        content += `**Desglose Táctico:**\n`;
                         content += `* **Ejecución:** ${m.description}\n`;
                         content += `* **Recursos Necesarios:** 1 Project Manager (seguimiento), presupuesto estimado 5-10% del total de campaña.\n`;
                         content += `* **KPI de Éxito:** Engagement mensurable y feedback cualitativo de al menos 3 clientes VIP.\n\n`;
                     }
                 });
 
-                content += `\n**CONCLUSIÓN ESTRATÉGICA (DUAL-AI SYNTHESIS):**\n`;
+                content += `\n**CONCLUSIÓN ESTRATÉGICA:**\n`;
                 content += `La hoja de ruta es viable si se ejecuta con precisión militar. El mayor riesgo es la dilución del mensaje por falta de coordinación entre equipos. **Recomendación Final:** Asignar un "Campaign Owner" único con autoridad para tomar decisiones en tiempo real.`;
 
             } else if (lang === "ca") {
-                content = `**ANÀLISI DETALLADA PAS A PAS - DUAL-AI (GEMINI + PERPLEXITY)**\n\n**CONTEXT GENERAL:**\nLa full de ruta generada per a ${seed} segueix una metodologia de "${campaignType}" amb ${milestones.length} fites clau.\n\n`;
+                content = `**ANÀLISI DETALLADA PAS A PAS**\n\n**CONTEXT GENERAL:**\nLa full de ruta generada per a ${seed} segueix una metodologia de "${campaignType}" amb ${milestones.length} fites clau.\n\n`;
 
                 milestones.forEach((m, idx) => {
                     content += `---\n\n**${m.phase.toUpperCase()}: ${m.title}**\n*Data Objectiu:* ${m.date}\n\n`;
@@ -182,13 +182,13 @@ export default function TimelinePage() {
                 content += `\n**CONCLUSIÓ ESTRATÈGICA:**\nLa full de ruta és viable amb execució precisa. Assignar un "Campaign Owner" únic.`;
 
             } else {
-                content = `**DETAILED STEP-BY-STEP ANALYSIS - DUAL-AI (GEMINI + PERPLEXITY)**\n\n**GENERAL CONTEXT:**\nThe roadmap generated for ${seed} follows a "${campaignType}" methodology with ${milestones.length} key milestones.\n\n`;
+                content = `**DETAILED STEP-BY-STEP ANALYSIS**\n\n**GENERAL CONTEXT:**\nThe roadmap generated for ${seed} follows a "${campaignType}" methodology with ${milestones.length} key milestones.\n\n`;
 
                 milestones.forEach((m, idx) => {
                     content += `---\n\n**${m.phase.toUpperCase()}: ${m.title}**\n*Target Date:* ${m.date}\n\n`;
 
                     if (m.title.includes("Activation") || m.title.includes("Trend Velocity")) {
-                        content += `**Tactical Breakdown (Gemini Deep Dive):**\n`;
+                        content += `**Tactical Breakdown:**\n`;
                         content += `* **Why 48 hours?** LinkedIn "Share of Voice" studies show 72% of engagement occurs in the first 48h. Immediate saturation creates FOMO effect.\n`;
                         content += `* **Practical Implementation:** Schedule 3 posts 8h apart. Post 1: Thought Leadership (6 AM GMT), Post 2: Video (2 PM), Post 3: Infographic (10 PM).\n`;
                         content += `* **Success Metrics:** >500 impressions/post, >15% engagement, >10 direct InMails from decision-makers.\n\n`;
@@ -197,7 +197,7 @@ export default function TimelinePage() {
                     }
                 });
 
-                content += `\n**STRATEGIC CONCLUSION (DUAL-AI SYNTHESIS):**\nRoadmap is viable with precise execution. Assign a single "Campaign Owner" with real-time decision authority.`;
+                content += `\n**STRATEGIC CONCLUSION:**\nRoadmap is viable with precise execution. Assign a single "Campaign Owner" with real-time decision authority.`;
             }
 
             setAnalysis(content);
