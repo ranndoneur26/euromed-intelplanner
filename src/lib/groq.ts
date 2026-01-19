@@ -68,7 +68,12 @@ Genera un análisis estratégico de marketing detallado en ${langMap[lang] || "e
 
 1. Una "Misión Crítica" (un párrafo de 4-6 líneas) que defina el objetivo estratégico principal para lanzar ${seed} en ${market}.
 
-2. Exactamente 3 recomendaciones clave, cada una debe incluir:
+2. Una "Evaluación de Presupuesto":
+   - Analiza si el presupuesto de €${budget.toLocaleString()} es "Bajo", "Adecuado" o "Alto" para una campaña de ${campaignType === "impact" ? "Alto Impacto" : "Mantenimiento"} en el mercado ${market}.
+   - Ten en cuenta los costos reales de medios, ferias y agencias en ese mercado específico.
+   - Proporciona un presupuesto recomendado estimado para lograr los objetivos óptimamente.
+
+3. Exactamente 3 recomendaciones clave, cada una debe incluir:
    - Un título descriptivo y específico
    - Una descripción detallada (3-5 líneas) que incluya tácticas concretas y justificación basada en tendencias del mercado
 
@@ -82,6 +87,11 @@ IMPORTANTE:
 FORMATO DE SALIDA (JSON válido, sin comentarios):
 {
   "missionCritical": "texto de la misión crítica",
+  "budgetEvaluation": {
+    "assessment": "Bajo" | "Adecuado" | "Alto",
+    "analysis": "Análisis detallado de por qué el presupuesto es X, analizando costes de impacto o mantenimiento en el mercado seleccionado",
+    "recommendedBudget": "€XX,XXX - €XX,XXX"
+  },
   "recommendations": [
     {
       "title": "Título de la recomendación 1",
