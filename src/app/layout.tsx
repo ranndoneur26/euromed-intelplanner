@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Montserrat, Inter } from "next/font/google";
-import Sidebar from "@/components/Sidebar";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { GravityProvider } from "@/context/GravityContext";
+import { AuthProvider } from "@/context/AuthContext";
+import AuthGate from "@/components/AuthGate";
 import LanguageSync from "@/components/LanguageSync";
 import "./globals.css";
 
@@ -33,16 +34,16 @@ export default function RootLayout({
       <body className={`${montserrat.variable} ${inter.variable}`} suppressHydrationWarning>
         <LanguageProvider>
           <LanguageSync />
-          <GravityProvider>
-            <div style={{ display: "flex", minHeight: "100vh" }}>
-              <Sidebar />
-              <main style={{ flex: 1, marginLeft: "280px", display: "flex", flexDirection: "column" }}>
+          <AuthProvider>
+            <GravityProvider>
+              <AuthGate>
                 {children}
-              </main>
-            </div>
-          </GravityProvider>
+              </AuthGate>
+            </GravityProvider>
+          </AuthProvider>
         </LanguageProvider>
       </body>
     </html>
   );
 }
+
