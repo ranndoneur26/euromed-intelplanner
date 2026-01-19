@@ -32,6 +32,7 @@ async function callGroq(prompt: string): Promise<string> {
     model: MODEL,
     temperature: 0.7,
     max_tokens: 4096,
+    response_format: { type: "json_object" },
   });
 
   return completion.choices[0]?.message?.content || "";
