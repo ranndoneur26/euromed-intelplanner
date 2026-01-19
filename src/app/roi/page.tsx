@@ -50,7 +50,7 @@ const COLORS = ['#7B9F35', '#377cbc', '#00f0ff', '#f59e0b', '#8b5cf6'];
 
 export default function ROIPage() {
     const { t, lang } = useLanguage();
-    const { seed, budget: contextBudget, completeStep } = useGravity();
+    const { seed, budget: contextBudget, market: contextMarket, completeStep } = useGravity();
     const [investment, setInvestment] = useState("");
     const [revenue, setRevenue] = useState("");
     const [loading, setLoading] = useState(false);
@@ -68,6 +68,20 @@ export default function ROIPage() {
             setInvestment(contextBudget.toString());
         }
     }, [contextBudget, investment]);
+
+    // Auto-fill region from Strategy's market
+    useEffect(() => {
+        if (contextMarket && !customRegion) {
+            // If the market matches a predefined region, use it; otherwise set as custom
+            const predefinedRegions = ["EMEA", "APAC", "NA", "LATAM"];
+            if (predefinedRegions.includes(contextMarket.toUpperCase())) {
+                setRegion(contextMarket.toUpperCase());
+            } else {
+                setRegion("Other");
+                setCustomRegion(contextMarket);
+            }
+        }
+    }, [contextMarket, customRegion]);
 
     const handleCalculate = async (e: React.FormEvent) => {
         e.preventDefault();

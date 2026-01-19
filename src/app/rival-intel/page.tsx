@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Swords, Sparkles, Shield, Zap, Target } from "lucide-react";
+import { Swords, Sparkles, Shield, Zap, Target, TrendingUp, TrendingDown, CheckCircle } from "lucide-react";
 import styles from "./page.module.css";
 import { useLanguage } from "@/context/LanguageContext";
 import { useGravity } from "@/context/GravityContext";
@@ -21,11 +21,14 @@ interface GapItem {
 
 export default function RivalIntelPage() {
     const { t, lang } = useLanguage();
-    const { seed, completeStep } = useGravity();
+    const { seed, market, completeStep } = useGravity();
     const [competitor, setCompetitor] = useState("");
     const [loading, setLoading] = useState(false);
     const [analysis, setAnalysis] = useState<GapAnalysis[]>([]);
     const [synthesis, setSynthesis] = useState("");
+    const [competitorStrengths, setCompetitorStrengths] = useState<string[]>([]);
+    const [competitorWeaknesses, setCompetitorWeaknesses] = useState<string[]>([]);
+    const [actionPlan, setActionPlan] = useState<string[]>([]);
     const [loadingGaps, setLoadingGaps] = useState(false);
     const [detectedGaps, setDetectedGaps] = useState<GapItem[]>([]);
 
@@ -51,14 +54,20 @@ export default function RivalIntelPage() {
             }
 
             const result = await response.json();
-            setAnalysis(result.analysis);
-            setSynthesis(result.synthesis);
-            completeStep("rival-intel", result.analysis);
+            setAnalysis(result.analysis || []);
+            setSynthesis(result.synthesis || "");
+            setCompetitorStrengths(result.competitorStrengths || []);
+            setCompetitorWeaknesses(result.competitorWeaknesses || []);
+            setActionPlan(result.actionPlan || []);
+            completeStep("rival-intel", result);
         } catch (err) {
             console.error("Competitor analysis error:", err);
             // Show empty result on error
             setAnalysis([]);
             setSynthesis("");
+            setCompetitorStrengths([]);
+            setCompetitorWeaknesses([]);
+            setActionPlan([]);
         } finally {
             setLoading(false);
         }
@@ -75,6 +84,7 @@ export default function RivalIntelPage() {
                 },
                 body: JSON.stringify({
                     seed,
+                    market,
                     lang
                 })
             });
@@ -153,7 +163,23 @@ export default function RivalIntelPage() {
                     <section className={`${styles.results} glass-panel`} style={{ marginTop: '2rem' }}>
                         <h2 className={styles.panelTitle} style={{ marginBottom: '1.5rem' }}>
                             <Target size={24} style={{ display: 'inline-block', marginRight: '10px', verticalAlign: 'middle' }} />
+                            {seed && <span style={{ opacity: 0.7 }}>{seed}: </span>}
                             {t("detectGaps")}
+                            {market && (
+                                <span style={{
+                                    marginLeft: '12px',
+                                    padding: '4px 12px',
+                                    background: 'rgba(123, 159, 53, 0.2)',
+                                    border: '1px solid rgba(123, 159, 53, 0.5)',
+                                    borderRadius: '16px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: '500',
+                                    color: '#7B9F35',
+                                    verticalAlign: 'middle'
+                                }}>
+                                    📍 {market}
+                                </span>
+                            )}
                         </h2>
 
                         {detectedGaps
@@ -262,10 +288,85 @@ export default function RivalIntelPage() {
                         </div>
 
                         <div className={styles.synthesisBox} style={{ marginTop: '2rem', padding: '1.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', borderLeft: '4px solid var(--primary-green)' }}>
+                            <h4 style={{ marginBottom: '1rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Shield size={18} />
+                                {lang === "es" ? "Síntesis Estratégica" : lang === "ca" ? "Síntesi Estratègica" : "Strategic Synthesis"}
+                            </h4>
                             <p style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6', color: 'var(--text-secondary)' }}>
                                 {synthesis}
                             </p>
                         </div>
+
+                        {/* Strengths and Weaknesses Grid */}
+                        {(competitorStrengths.length > 0 || competitorWeaknesses.length > 0) && (
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginTop: '2rem' }}>
+                                {/* Competitor Strengths */}
+                                {competitorStrengths.length > 0 && (
+                                    <div style={{ padding: '1.5rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '12px', borderLeft: '4px solid #ef4444' }}>
+                                        <h4 style={{ marginBottom: '1rem', color: '#f87171', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <TrendingUp size={18} />
+                                            {lang === "es" ? `Fortalezas de ${competitor}` : lang === "ca" ? `Fortaleses de ${competitor}` : `${competitor}'s Strengths`}
+                                        </h4>
+                                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                            {competitorStrengths.map((strength, idx) => (
+                                                <li key={idx} style={{ padding: '0.5rem 0', borderBottom: idx < competitorStrengths.length - 1 ? '1px solid rgba(255,255,255,0.1)' : 'none', color: 'var(--text-secondary)', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                                                    <span style={{ color: '#f87171' }}>▲</span> {strength}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {/* Competitor Weaknesses */}
+                                {competitorWeaknesses.length > 0 && (
+                                    <div style={{ padding: '1.5rem', background: 'rgba(34, 197, 94, 0.1)', borderRadius: '12px', borderLeft: '4px solid #22c55e' }}>
+                                        <h4 style={{ marginBottom: '1rem', color: '#4ade80', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <TrendingDown size={18} />
+                                            {lang === "es" ? `Debilidades de ${competitor}` : lang === "ca" ? `Debilitats de ${competitor}` : `${competitor}'s Weaknesses`}
+                                        </h4>
+                                        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                            {competitorWeaknesses.map((weakness, idx) => (
+                                                <li key={idx} style={{ padding: '0.5rem 0', borderBottom: idx < competitorWeaknesses.length - 1 ? '1px solid rgba(255,255,255,0.1)' : 'none', color: 'var(--text-secondary)', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                                                    <span style={{ color: '#4ade80' }}>▼</span> {weakness}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Action Plan */}
+                        {actionPlan.length > 0 && (
+                            <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'rgba(55, 124, 188, 0.1)', borderRadius: '12px', borderLeft: '4px solid #377cbc' }}>
+                                <h4 style={{ marginBottom: '1rem', color: '#60a5fa', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <CheckCircle size={18} />
+                                    {lang === "es" ? "Plan de Acción Estratégico" : lang === "ca" ? "Pla d'Acció Estratègic" : "Strategic Action Plan"}
+                                </h4>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                    {actionPlan.map((action, idx) => (
+                                        <div key={idx} style={{ padding: '1rem', background: 'rgba(55, 124, 188, 0.15)', borderRadius: '8px', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                                            <span style={{
+                                                background: '#377cbc',
+                                                color: 'white',
+                                                width: '24px',
+                                                height: '24px',
+                                                borderRadius: '50%',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: '0.8rem',
+                                                fontWeight: '700',
+                                                flexShrink: 0
+                                            }}>
+                                                {idx + 1}
+                                            </span>
+                                            <p style={{ color: 'var(--text-secondary)', lineHeight: '1.5', margin: 0 }}>{action}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </section>
                 )}
             </div>

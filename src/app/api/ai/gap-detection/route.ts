@@ -4,7 +4,7 @@ import { generateGapDetection } from "@/lib/gemini";
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { seed, lang } = body;
+        const { seed, market, lang } = body;
 
         // Validate inputs
         if (!seed || !lang) {
@@ -14,9 +14,10 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Call AI API
+        // Call AI API with market parameter
         const result = await generateGapDetection({
             seed,
+            market: market || "",
             lang
         });
 
