@@ -1,13 +1,18 @@
 import Groq from "groq-sdk";
 
-// Initialize the Groq client
-const apiKey = process.env.GROQ_API_KEY;
+// Lazy-initialize the Groq client to prevent build-time failures
+let groqClient: Groq | null = null;
 
-if (!apiKey) {
-    throw new Error("GROQ_API_KEY is not defined in environment variables");
+function getGroqClient(): Groq {
+  if (!groqClient) {
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) {
+      throw new Error("GROQ_API_KEY is not defined in environment variables");
+    }
+    groqClient = new Groq({ apiKey });
+  }
+  return groqClient;
 }
-
-const groq = new Groq({ apiKey });
 
 // Use Llama 3.3 70B - powerful and fast model
 const MODEL = "llama-3.3-70b-versatile";
@@ -16,40 +21,41 @@ const MODEL = "llama-3.3-70b-versatile";
  * Helper function to call Groq API and parse JSON response
  */
 async function callGroq(prompt: string): Promise<string> {
-    const completion = await groq.chat.completions.create({
-        messages: [
-            {
-                role: "user",
-                content: prompt,
-            },
-        ],
-        model: MODEL,
-        temperature: 0.7,
-        max_tokens: 4096,
-    });
+  const groq = getGroqClient();
+  const completion = await groq.chat.completions.create({
+    messages: [
+      {
+        role: "user",
+        content: prompt,
+      },
+    ],
+    model: MODEL,
+    temperature: 0.7,
+    max_tokens: 4096,
+  });
 
-    return completion.choices[0]?.message?.content || "";
+  return completion.choices[0]?.message?.content || "";
 }
 
 /**
  * Generate strategic marketing analysis based on asset, market, and budget
  */
 export async function generateStrategyAnalysis(params: {
-    seed: string;
-    market: string;
-    budget: number;
-    campaignType: "impact" | "maintenance";
-    lang: string;
+  seed: string;
+  market: string;
+  budget: number;
+  campaignType: "impact" | "maintenance";
+  lang: string;
 }) {
-    const { seed, market, budget, campaignType, lang } = params;
+  const { seed, market, budget, campaignType, lang } = params;
 
-    const langMap: Record<string, string> = {
-        es: "español",
-        ca: "catalán",
-        en: "inglés"
-    };
+  const langMap: Record<string, string> = {
+    es: "español",
+    ca: "catalán",
+    en: "inglés"
+  };
 
-    const prompt = `Eres un experto estratega de marketing B2B en la industria de ingredientes nutracéuticos y botánicos.
+  const prompt = `Eres un experto estratega de marketing B2B en la industria de ingredientes nutracéuticos y botánicos.
 
 CONTEXTO:
 - Ingrediente/Asset: ${seed}
@@ -94,41 +100,41 @@ FORMATO DE SALIDA (JSON válido, sin comentarios):
 
 Responde SOLO con el JSON, sin texto adicional.`;
 
-    try {
-        const text = await callGroq(prompt);
+  try {
+    const text = await callGroq(prompt);
 
-        // Parse JSON from the response
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            throw new Error("Invalid JSON response from AI");
-        }
-
-        const parsed = JSON.parse(jsonMatch[0]);
-        return parsed;
-    } catch (error) {
-        console.error("Error generating strategy analysis:", error);
-        throw error;
+    // Parse JSON from the response
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Invalid JSON response from AI");
     }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    return parsed;
+  } catch (error) {
+    console.error("Error generating strategy analysis:", error);
+    throw error;
+  }
 }
 
 /**
  * Generate channel mix recommendations
  */
 export async function generateChannelMix(params: {
-    seed: string;
-    market: string;
-    audience: string;
-    lang: string;
+  seed: string;
+  market: string;
+  audience: string;
+  lang: string;
 }) {
-    const { seed, market, audience, lang } = params;
+  const { seed, market, audience, lang } = params;
 
-    const langMap: Record<string, string> = {
-        es: "español",
-        ca: "catalán",
-        en: "inglés"
-    };
+  const langMap: Record<string, string> = {
+    es: "español",
+    ca: "catalán",
+    en: "inglés"
+  };
 
-    const prompt = `Eres un experto en marketing omnicanal para la industria de ingredientes nutracéuticos B2B.
+  const prompt = `Eres un experto en marketing omnicanal para la industria de ingredientes nutracéuticos B2B.
 
 CONTEXTO:
 - Ingrediente: ${seed}
@@ -165,39 +171,39 @@ FORMATO DE SALIDA (JSON válido):
 
 Responde SOLO con el JSON, sin texto adicional.`;
 
-    try {
-        const text = await callGroq(prompt);
+  try {
+    const text = await callGroq(prompt);
 
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            throw new Error("Invalid JSON response from AI");
-        }
-
-        const parsed = JSON.parse(jsonMatch[0]);
-        return parsed.channels;
-    } catch (error) {
-        console.error("Error generating channel mix:", error);
-        throw error;
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Invalid JSON response from AI");
     }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    return parsed.channels;
+  } catch (error) {
+    console.error("Error generating channel mix:", error);
+    throw error;
+  }
 }
 
 /**
  * Generate competitor gap analysis - deep investigation of pros and cons relative to our seed
  */
 export async function generateCompetitorAnalysis(params: {
-    seed: string;
-    competitor: string;
-    lang: string;
+  seed: string;
+  competitor: string;
+  lang: string;
 }) {
-    const { seed, competitor, lang } = params;
+  const { seed, competitor, lang } = params;
 
-    const langMap: Record<string, string> = {
-        es: "español",
-        ca: "catalán",
-        en: "inglés"
-    };
+  const langMap: Record<string, string> = {
+    es: "español",
+    ca: "catalán",
+    en: "inglés"
+  };
 
-    const prompt = `Eres un analista competitivo senior de la industria nutracéutica y de ingredientes botánicos. Tu especialidad es realizar investigaciones profundas sobre competidores.
+  const prompt = `Eres un analista competitivo senior de la industria nutracéutica y de ingredientes botánicos. Tu especialidad es realizar investigaciones profundas sobre competidores.
 
 CONTEXTO CRÍTICO:
 - NUESTRO INGREDIENTE/ASSET (Seed): "${seed}"
@@ -277,49 +283,49 @@ FORMATO DE SALIDA (JSON válido):
 
 Responde SOLO con el JSON válido, sin texto adicional.`;
 
-    try {
-        const text = await callGroq(prompt);
+  try {
+    const text = await callGroq(prompt);
 
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            throw new Error("Invalid JSON response from AI");
-        }
-
-        const parsed = JSON.parse(jsonMatch[0]);
-        return parsed;
-    } catch (error) {
-        console.error("Error generating competitor analysis:", error);
-        throw error;
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Invalid JSON response from AI");
     }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    return parsed;
+  } catch (error) {
+    console.error("Error generating competitor analysis:", error);
+    throw error;
+  }
 }
 
 /**
  * Generate deep dive implementation guide
  */
 export async function generateDeepDive(params: {
-    strategy: any;
-    seed: string;
-    lang: string;
+  strategy: any;
+  seed: string;
+  lang: string;
 }) {
-    const { strategy, seed, lang } = params;
+  const { strategy, seed, lang } = params;
 
-    // Validate strategy object
-    if (!strategy || !strategy.missionCritical) {
-        throw new Error("Invalid strategy object - missing missionCritical");
-    }
+  // Validate strategy object
+  if (!strategy || !strategy.missionCritical) {
+    throw new Error("Invalid strategy object - missing missionCritical");
+  }
 
-    const recommendations = strategy.recommendations || [];
-    const recommendationsText = recommendations.length > 0
-        ? recommendations.map((r: any, i: number) => `${i + 1}. ${r.title || 'Recomendación'}: ${r.description || ''}`).join("\n")
-        : "No hay recomendaciones disponibles";
+  const recommendations = strategy.recommendations || [];
+  const recommendationsText = recommendations.length > 0
+    ? recommendations.map((r: any, i: number) => `${i + 1}. ${r.title || 'Recomendación'}: ${r.description || ''}`).join("\n")
+    : "No hay recomendaciones disponibles";
 
-    const langMap: Record<string, string> = {
-        es: "español",
-        ca: "catalán",
-        en: "inglés"
-    };
+  const langMap: Record<string, string> = {
+    es: "español",
+    ca: "catalán",
+    en: "inglés"
+  };
 
-    const prompt = `Eres un consultor de implementación estratégica para marketing B2B en nutracéuticos.
+  const prompt = `Eres un consultor de implementación estratégica para marketing B2B en nutracéuticos.
 
 CONTEXTO:
 Basándote en esta estrategia ya generada:
@@ -356,41 +362,41 @@ USA FORMATO MARKDOWN:
 
 Devuelve SOLO el contenido markdown, sin JSON.`;
 
-    try {
-        const text = await callGroq(prompt);
+  try {
+    const text = await callGroq(prompt);
 
-        if (!text || text.trim() === '') {
-            throw new Error("Empty response from AI");
-        }
-
-        return text;
-    } catch (error) {
-        console.error("Error generating deep dive:", error);
-        throw error;
+    if (!text || text.trim() === '') {
+      throw new Error("Empty response from AI");
     }
+
+    return text;
+  } catch (error) {
+    console.error("Error generating deep dive:", error);
+    throw error;
+  }
 }
 
 /**
  * Generate gap detection and tactical response analysis - returns 3 gaps with relevance scores
  */
 export async function generateGapDetection(params: {
-    seed: string;
-    market: string;
-    lang: string;
+  seed: string;
+  market: string;
+  lang: string;
 }) {
-    const { seed, market, lang } = params;
+  const { seed, market, lang } = params;
 
-    const langMap: Record<string, string> = {
-        es: "español",
-        ca: "catalán",
-        en: "inglés"
-    };
+  const langMap: Record<string, string> = {
+    es: "español",
+    ca: "catalán",
+    en: "inglés"
+  };
 
-    const marketContext = market
-        ? `- Mercado geográfico objetivo: ${market}`
-        : "- Mercado geográfico objetivo: Global";
+  const marketContext = market
+    ? `- Mercado geográfico objetivo: ${market}`
+    : "- Mercado geográfico objetivo: Global";
 
-    const prompt = `Eres un estratega de marketing B2B especializado en detección de oportunidades de mercado para la industria nutracéutica.
+  const prompt = `Eres un estratega de marketing B2B especializado en detección de oportunidades de mercado para la industria nutracéutica.
 
 CONTEXTO:
 - Ingrediente/Asset analizado: ${seed}
@@ -449,44 +455,44 @@ FORMATO DE SALIDA (JSON válido):
 
 Responde SOLO con el JSON, sin texto adicional.`;
 
-    try {
-        const text = await callGroq(prompt);
+  try {
+    const text = await callGroq(prompt);
 
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            throw new Error("Invalid JSON response from AI");
-        }
-
-        const parsed = JSON.parse(jsonMatch[0]);
-        return parsed;
-    } catch (error) {
-        console.error("Error generating gap detection:", error);
-        throw error;
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Invalid JSON response from AI");
     }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    return parsed;
+  } catch (error) {
+    console.error("Error generating gap detection:", error);
+    throw error;
+  }
 }
 
 /**
  * Generate comprehensive ROI analysis based on the seed/asset
  */
 export async function generateROIAnalysis(params: {
-    seed: string;
-    investment: number;
-    projectedRevenue: number;
-    region: string;
-    sector: string;
-    lang: string;
+  seed: string;
+  investment: number;
+  projectedRevenue: number;
+  region: string;
+  sector: string;
+  lang: string;
 }) {
-    const { seed, investment, projectedRevenue, region, sector, lang } = params;
+  const { seed, investment, projectedRevenue, region, sector, lang } = params;
 
-    const langMap: Record<string, string> = {
-        es: "español",
-        ca: "catalán",
-        en: "inglés"
-    };
+  const langMap: Record<string, string> = {
+    es: "español",
+    ca: "catalán",
+    en: "inglés"
+  };
 
-    const multiplier = projectedRevenue / (investment || 1);
+  const multiplier = projectedRevenue / (investment || 1);
 
-    const prompt = `Eres un analista financiero especializado en inversiones de marketing para ingredientes nutracéuticos B2B.
+  const prompt = `Eres un analista financiero especializado en inversiones de marketing para ingredientes nutracéuticos B2B.
 
 CONTEXTO:
 - Ingrediente/Asset: ${seed}
@@ -568,44 +574,44 @@ FORMATO DE SALIDA (JSON válido):
 
 Responde SOLO con el JSON, sin texto adicional.`;
 
-    try {
-        const text = await callGroq(prompt);
+  try {
+    const text = await callGroq(prompt);
 
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            throw new Error("Invalid JSON response from AI");
-        }
-
-        const parsed = JSON.parse(jsonMatch[0]);
-        return parsed;
-    } catch (error) {
-        console.error("Error generating ROI analysis:", error);
-        throw error;
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Invalid JSON response from AI");
     }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    return parsed;
+  } catch (error) {
+    console.error("Error generating ROI analysis:", error);
+    throw error;
+  }
 }
 
 /**
  * Generate detailed timeline roadmap based on the seed/asset
  */
 export async function generateTimelineRoadmap(params: {
-    seed: string;
-    campaignType: "Impact" | "Maintenance";
-    startDate: string;
-    market?: string;
-    lang: string;
+  seed: string;
+  campaignType: "Impact" | "Maintenance";
+  startDate: string;
+  market?: string;
+  lang: string;
 }) {
-    const { seed, campaignType, startDate, market, lang } = params;
+  const { seed, campaignType, startDate, market, lang } = params;
 
-    const langMap: Record<string, string> = {
-        es: "español",
-        ca: "catalán",
-        en: "inglés"
-    };
+  const langMap: Record<string, string> = {
+    es: "español",
+    ca: "catalán",
+    en: "inglés"
+  };
 
-    const startDateObj = new Date(startDate);
-    const formattedDate = startDateObj.toLocaleDateString(lang === 'es' ? 'es-ES' : lang === 'ca' ? 'ca-ES' : 'en-US', { year: 'numeric', month: 'long' });
+  const startDateObj = new Date(startDate);
+  const formattedDate = startDateObj.toLocaleDateString(lang === 'es' ? 'es-ES' : lang === 'ca' ? 'ca-ES' : 'en-US', { year: 'numeric', month: 'long' });
 
-    const prompt = `Eres un estratega de marketing B2B especializado en lanzamientos de ingredientes nutracéuticos y botánicos.
+  const prompt = `Eres un estratega de marketing B2B especializado en lanzamientos de ingredientes nutracéuticos y botánicos.
 
 CONTEXTO:
 - Ingrediente/Asset: ${seed}
@@ -689,18 +695,18 @@ FORMATO DE SALIDA (JSON válido):
 
 Responde SOLO con el JSON, sin texto adicional.`;
 
-    try {
-        const text = await callGroq(prompt);
+  try {
+    const text = await callGroq(prompt);
 
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            throw new Error("Invalid JSON response from AI");
-        }
-
-        const parsed = JSON.parse(jsonMatch[0]);
-        return parsed;
-    } catch (error) {
-        console.error("Error generating timeline roadmap:", error);
-        throw error;
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("Invalid JSON response from AI");
     }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    return parsed;
+  } catch (error) {
+    console.error("Error generating timeline roadmap:", error);
+    throw error;
+  }
 }
