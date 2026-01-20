@@ -135,9 +135,10 @@ export async function generateChannelMix(params: {
   seed: string;
   market: string;
   audience: string;
+  budget?: number;
   lang: string;
 }) {
-  const { seed, market, audience, lang } = params;
+  const { seed, market, audience, budget, lang } = params;
 
   const langMap: Record<string, string> = {
     es: "español",
@@ -145,15 +146,24 @@ export async function generateChannelMix(params: {
     en: "inglés"
   };
 
+  const budgetContext = budget
+    ? `- Presupuesto disponible: €${budget.toLocaleString()} (Usar este dato para justificar la selección)`
+    : "- Presupuesto: No especificado (Asumir presupuesto estándar B2B)";
+
   const prompt = `Eres un experto en marketing omnicanal para la industria de ingredientes nutracéuticos B2B.
 
 CONTEXTO:
 - Ingrediente: ${seed}
 - Mercado: ${market}
 - Audiencia objetivo: ${audience}
+${budgetContext}
 
 TAREA:
-Genera una lista de 4-6 canales de marketing recomendados en ${langMap[lang] || "español"}.
+Genera un mix de canales de marketing optimizado en ${langMap[lang] || "español"}.
+
+Debes proporcionar:
+1. Una lista de 4-6 canales recomendados.
+2. Una explicación razonada ("explanation") de POR QUÉ esta es la mejor opción dado el presupuesto.
 
 Cada canal debe tener:
 - name: Nombre descriptivo del canal
@@ -161,15 +171,15 @@ Cada canal debe tener:
 - relevance: Número entre 0-100 indicando la relevancia para esta campaña
 - reasoning: Justificación detallada (2-4 líneas) de por qué este canal es importante
 
-IMPORTANTE:
-- Incluye siempre LinkedIn como canal B2B principal
-- Si la audiencia es joven (Gen Z, Millennials), incluye Instagram/TikTok
-- Adapta eventos a la región (Vitafoods Europe, SupplySide West, etc.)
-- Incluye publicaciones especializadas según el mercado
-- Si detectas términos de salud específicos (inmune, probióticos, etc.), incluye portales científicos
+IMPORTANTE SOBRE EL PRESUPUESTO:
+- Si el presupuesto es BAJO (<10k€): Prioriza canales digitales, content marketing, y evita grandes ferias. Explica que se busca eficiencia.
+- Si el presupuesto es MEDIO (10k-50k€): Combina digital con un evento clave o PR en revistas top.
+- Si el presupuesto es ALTO (>50k€): Incluye ferias importantes (Vitafoods, SupplySide), patrocinios y campañas multicanal agresivas.
+- La "explanation" debe mencionar explícitamente cómo el presupuesto influyó en la decisión.
 
 FORMATO DE SALIDA (JSON válido):
 {
+  "explanation": "Párrafo de 4-6 líneas justificando la estrategia y el mix elegido basándose en el presupuesto disponible (€${budget || 'N/A'})...",
   "channels": [
     {
       "name": "Nombre del canal",
@@ -191,7 +201,7 @@ Responde SOLO con el JSON, sin texto adicional.`;
     }
 
     const parsed = JSON.parse(jsonMatch[0]);
-    return parsed.channels;
+    return parsed; // Returns { explanation: string, channels: [] }
   } catch (error) {
     console.error("Error generating channel mix:", error);
     throw error;

@@ -4,7 +4,7 @@ import { generateChannelMix } from "@/lib/gemini";
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { seed, market, audience, lang } = body;
+        const { seed, market, audience, budget, lang } = body;
 
         // Validate inputs
         if (!seed || !market || !audience || !lang) {
@@ -15,14 +15,15 @@ export async function POST(request: NextRequest) {
         }
 
         // Call Gemini API
-        const channels = await generateChannelMix({
+        const result = await generateChannelMix({
             seed,
             market,
             audience,
+            budget,
             lang
         });
 
-        return NextResponse.json({ channels });
+        return NextResponse.json(result);
     } catch (error) {
         console.error("Channels API error:", error);
         return NextResponse.json(

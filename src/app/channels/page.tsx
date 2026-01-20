@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Share2, Sparkles, Smartphone, Tv } from "lucide-react";
+import { Share2, Sparkles, Smartphone, Tv, BarChart3, Info } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import styles from "./page.module.css";
 import { useLanguage } from "@/context/LanguageContext";
 import { useGravity } from "@/context/GravityContext";
@@ -16,11 +17,12 @@ interface Channel {
 
 export default function ChannelsPage() {
     const { t, lang } = useLanguage();
-    const { seed, completeStep } = useGravity();
+    const { seed, completeStep, budget } = useGravity();
     const [market, setMarket] = useState("");
     const [audience, setAudience] = useState("");
     const [loading, setLoading] = useState(false);
     const [channels, setChannels] = useState<Channel[]>([]);
+    const [explanation, setExplanation] = useState("");
 
     const handleGenerate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -36,6 +38,7 @@ export default function ChannelsPage() {
                     seed,
                     market,
                     audience,
+                    budget,
                     lang
                 })
             });
@@ -46,7 +49,8 @@ export default function ChannelsPage() {
 
             const data = await response.json();
             setChannels(data.channels);
-            completeStep("channels", data.channels);
+            setExplanation(data.explanation || "");
+            completeStep("channels", data);
         } catch (err) {
             console.error("Channel generation error:", err);
             // Show empty result on error
@@ -98,6 +102,59 @@ export default function ChannelsPage() {
                 {channels.length > 0 && (
                     <section className={`${styles.results} glass-panel`}>
                         <h2 className={styles.panelTitle}>{t("recommendedMix")}</h2>
+
+                        <div className={styles.explanationBox} style={{
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            padding: '1.5rem',
+                            borderRadius: '12px',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            marginBottom: '2rem'
+                        }}>
+                            <h3 style={{
+                                fontSize: '1.1rem',
+                                marginBottom: '0.8rem',
+                                color: '#f8fafc',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px'
+                            }}>
+                                <Info size={20} color="#38bdf8" />
+                                {lang === "es" ? "Análisis de Inversión" : lang === "ca" ? "Anàlisi d'Inversió" : "Investment Analysis"}
+                            </h3>
+                            <p style={{ lineHeight: '1.6', color: '#e2e8f0', marginBottom: '0.5rem' }}>
+                                {explanation}
+                            </p>
+                            {budget > 0 && (
+                                <p style={{ fontSize: '0.9rem', color: '#94a3b8', marginTop: '0.5rem' }}>
+                                    {lang === "es" ? "Presupuesto considerado: " : lang === "ca" ? "Pressupost considerat: " : "Budget considered: "}
+                                    <strong style={{ color: '#f59e0b' }}>€{budget.toLocaleString()}</strong>
+                                </p>
+                            )}
+                        </div>
+
+                        <div className={styles.chartSection} style={{ marginBottom: '2.5rem', height: '300px' }}>
+                            <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <BarChart3 size={20} color="#7B9F35" />
+                                {lang === "es" ? "Relevancia por Canal" : lang === "ca" ? "Rellevància per Canal" : "Channel Relevance"}
+                            </h3>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={channels} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" horizontal={false} />
+                                    <XAxis type="number" domain={[0, 100]} stroke="#94a3b8" />
+                                    <YAxis type="category" dataKey="name" stroke="#94a3b8" width={120} tick={{ fontSize: 11 }} />
+                                    <Tooltip
+                                        contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
+                                        cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                                    />
+                                    <Bar dataKey="relevance" name={lang === "es" ? "Relevancia" : "Relevance"} radius={[0, 4, 4, 0]}>
+                                        {channels.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.type === 'Digital' ? '#38bdf8' : '#7B9F35'} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+
                         <div className={styles.channelGrid}>
                             {channels.map((channel, idx) => (
                                 <div key={idx} className={styles.channelCard}>
