@@ -195,16 +195,40 @@ Responde SOLO con el JSON, sin texto adicional.`;
   try {
     const text = await callGroq(prompt);
 
+    // Try to find JSON in the response
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      throw new Error("Invalid JSON response from AI");
+      console.error("Invalid JSON response from AI:", text);
+      // Fallback instead of crashing
+      return {
+        explanation: "No hemos podido generar una explicación detallada en este momento debido a una respuesta inesperada de la IA.",
+        channels: []
+      };
     }
 
-    const parsed = JSON.parse(jsonMatch[0]);
-    return parsed; // Returns { explanation: string, channels: [] }
+    try {
+      const parsed = JSON.parse(jsonMatch[0]);
+      return parsed;
+    } catch (parseError) {
+      console.error("JSON Parse Error:", parseError, "Raw:", text);
+      // Attempt to sanitize control characters
+      const sanitized = jsonMatch[0].replace(/[\u0000-\u0019]+/g, "");
+      try {
+        return JSON.parse(sanitized);
+      } catch (retryError) {
+        return {
+          explanation: "Error al procesar la respuesta de la IA. Por favor intenta de nuevo.",
+          channels: []
+        };
+      }
+    }
   } catch (error) {
     console.error("Error generating channel mix:", error);
-    throw error;
+    // Return safe fallback
+    return {
+      explanation: "Ha ocurrido un error al conectar con el servicio de IA.",
+      channels: []
+    };
   }
 }
 
