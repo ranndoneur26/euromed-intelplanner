@@ -1,5 +1,4 @@
-
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
 // Initialize the Gemini client
 const getGeminiClient = () => {
@@ -7,27 +6,28 @@ const getGeminiClient = () => {
     if (!apiKey) {
         throw new Error("GOOGLE_AI_API_KEY is not defined in environment variables");
     }
-    return new GoogleGenerativeAI(apiKey);
+    return new GoogleGenAI({ apiKey });
 };
 
-// Model configuration with search tool
-const MODEL_NAME = "gemini-2.0-flash"; // Use Flash for speed and efficiency, or "gemini-1.5-pro" if higher reasoning is needed
-// Note: as of recent SDKs, the model name should support search tool if available in the region/tier
+// Model configuration - use gemini-2.0-flash for speed
+const MODEL_NAME = "gemini-2.0-flash";
 
 /**
  * Helper function to call Gemini API with Google Search Grounding
  */
 async function callGeminiWithSearch(prompt: string): Promise<string> {
     const genAI = getGeminiClient();
-    const model = genAI.getGenerativeModel({
-        model: MODEL_NAME,
-        tools: [{ googleSearch: {} }]
-    });
 
     try {
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        return response.text();
+        const response = await genAI.models.generateContent({
+            model: MODEL_NAME,
+            contents: prompt,
+            config: {
+                tools: [{ googleSearch: {} }],
+            },
+        });
+
+        return response.text || "";
     } catch (error) {
         console.error("Error calling Gemini API:", error);
         throw error;
@@ -68,7 +68,7 @@ Genera un análisis estratégico basado en DATOS REALES Y ACTUALES en ${langMap[
 2. "Budget Evaluation": Analiza si €${budget.toLocaleString()} es competitivo hoy en día para ${market}. Busca costos reales de medios/ferias en este sector.
 3. Recomendaciones: 3 acciones clave basadas en TENDENCIAS ACTUALES (2024-2025).
 
-FORMATO DE SALIDA (JSON válido, SIN markdown inicial 'json' o '''json'''):
+FORMATO DE SALIDA (JSON válido, SIN markdown):
 {
   "missionCritical": "texto...",
   "budgetEvaluation": {
@@ -87,9 +87,11 @@ Responde SOLO con el JSON válido.`;
 
     try {
         const text = await callGeminiWithSearch(prompt);
-        // Clean up potential markdown formatting that Gemini might add
+        // Clean up potential markdown formatting
         const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
-        return JSON.parse(cleanText);
+        const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error("Invalid JSON response from Gemini");
+        return JSON.parse(jsonMatch[0]);
     } catch (error) {
         console.error("Error in Gemini Strategy Analysis:", error);
         throw error;
@@ -136,10 +138,11 @@ export async function generateCompetitorAnalysis(params: {
     try {
         const text = await callGeminiWithSearch(prompt);
         const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
-        return JSON.parse(cleanText);
+        const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error("Invalid JSON response from Gemini");
+        return JSON.parse(jsonMatch[0]);
     } catch (error) {
         console.error("Error in Gemini Competitor Analysis:", error);
-        // Fallback or rethrow? Let's rethrow to see the error
         throw error;
     }
 }
@@ -177,7 +180,9 @@ export async function generateGapDetection(params: {
     try {
         const text = await callGeminiWithSearch(prompt);
         const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
-        return JSON.parse(cleanText);
+        const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error("Invalid JSON response from Gemini");
+        return JSON.parse(jsonMatch[0]);
     } catch (error) {
         console.error("Error in Gemini Gap Detection:", error);
         throw error;
@@ -213,7 +218,7 @@ export async function generateDeepDive(params: {
 
     try {
         const text = await callGeminiWithSearch(prompt);
-        return text.replace(/```markdown/g, "").replace(/```/g, ""); // Clean potential code blocks
+        return text.replace(/```markdown/g, "").replace(/```/g, "");
     } catch (error) {
         console.error("Error in Gemini Deep Dive:", error);
         throw error;
