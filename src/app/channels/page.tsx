@@ -15,6 +15,11 @@ interface Channel {
     reasoning: string;
 }
 
+interface ChannelMixResponse {
+    channels: Channel[];
+    explanation?: string;
+}
+
 export default function ChannelsPage() {
     const { t, lang } = useLanguage();
     const { seed, completeStep, budget } = useGravity();
@@ -99,7 +104,7 @@ export default function ChannelsPage() {
                     </form>
                 </section>
 
-                {channels.length > 0 && (
+                {(channels.length > 0 || explanation) && (
                     <section className={`${styles.results} glass-panel`}>
                         <h2 className={styles.panelTitle}>{t("recommendedMix")}</h2>
 
@@ -132,46 +137,61 @@ export default function ChannelsPage() {
                             )}
                         </div>
 
-                        <div className={styles.chartSection} style={{ marginBottom: '2.5rem', height: '300px' }}>
-                            <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <BarChart3 size={20} color="#7B9F35" />
-                                {lang === "es" ? "Relevancia por Canal" : lang === "ca" ? "Rellevància per Canal" : "Channel Relevance"}
-                            </h3>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={channels} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" horizontal={false} />
-                                    <XAxis type="number" domain={[0, 100]} stroke="#94a3b8" />
-                                    <YAxis type="category" dataKey="name" stroke="#94a3b8" width={120} tick={{ fontSize: 11 }} />
-                                    <Tooltip
-                                        contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
-                                        cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                                    />
-                                    <Bar dataKey="relevance" name={lang === "es" ? "Relevancia" : "Relevance"} radius={[0, 4, 4, 0]}>
-                                        {channels.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.type === 'Digital' ? '#38bdf8' : '#7B9F35'} />
-                                        ))}
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
+                        {channels.length > 0 && (
+                            <div className={styles.chartSection} style={{ marginBottom: '2.5rem', height: '300px' }}>
+                                <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <BarChart3 size={20} color="#7B9F35" />
+                                    {lang === "es" ? "Relevancia por Canal" : lang === "ca" ? "Rellevància per Canal" : "Channel Relevance"}
+                                </h3>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={channels} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" horizontal={false} />
+                                        <XAxis type="number" domain={[0, 100]} stroke="#94a3b8" />
+                                        <YAxis type="category" dataKey="name" stroke="#94a3b8" width={120} tick={{ fontSize: 11 }} />
+                                        <Tooltip
+                                            contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
+                                            cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                                        />
+                                        <Bar dataKey="relevance" name={lang === "es" ? "Relevancia" : "Relevance"} radius={[0, 4, 4, 0]}>
+                                            {channels.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.type === 'Digital' ? '#38bdf8' : '#7B9F35'} />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        )}
 
                         <div className={styles.channelGrid}>
-                            {channels.map((channel, idx) => (
-                                <div key={idx} className={styles.channelCard}>
-                                    <div className={styles.cardHeader}>
-                                        <div className={styles.channelIcon}>
-                                            {channel.type === "Digital" ? <Smartphone size={20} /> : <Tv size={20} />}
+                            {channels.length > 0 ? (
+                                channels.map((channel, idx) => (
+                                    <div key={idx} className={styles.channelCard}>
+                                        <div className={styles.cardHeader}>
+                                            <div className={styles.channelIcon}>
+                                                {channel.type === "Digital" ? <Smartphone size={20} /> : <Tv size={20} />}
+                                            </div>
+                                            <span className={styles.channelType}>{channel.type}</span>
                                         </div>
-                                        <span className={styles.channelType}>{channel.type}</span>
+                                        <h3 className={styles.channelName}>{channel.name}</h3>
+                                        <div className={styles.relevanceBar}>
+                                            <div className={styles.relevanceFill} style={{ width: `${channel.relevance}%` }}></div>
+                                        </div>
+                                        <p className={styles.relevanceLabel}>{channel.relevance}% {t("match")}</p>
+                                        <p className={styles.reasoning}>{channel.reasoning}</p>
                                     </div>
-                                    <h3 className={styles.channelName}>{channel.name}</h3>
-                                    <div className={styles.relevanceBar}>
-                                        <div className={styles.relevanceFill} style={{ width: `${channel.relevance}%` }}></div>
-                                    </div>
-                                    <p className={styles.relevanceLabel}>{channel.relevance}% {t("match")}</p>
-                                    <p className={styles.reasoning}>{channel.reasoning}</p>
+                                ))
+                            ) : (
+                                <div className={styles.emptyChannels} style={{
+                                    gridColumn: '1 / -1',
+                                    padding: '2rem',
+                                    textAlign: 'center',
+                                    color: '#94a3b8',
+                                    background: 'rgba(255,255,255,0.03)',
+                                    borderRadius: '12px'
+                                }}>
+                                    <p>{lang === "es" ? "No se pudieron generar canales específicos, pero revise el análisis arriba." : lang === "ca" ? "No s'han pogut generar canals específics, però reviseu l'anàlisi de dalt." : "Specific channels could not be generated, but please review the analysis above."}</p>
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </section>
                 )}
