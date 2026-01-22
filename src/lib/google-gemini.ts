@@ -13,25 +13,188 @@ const getGeminiClient = () => {
 const MODEL_NAME = "gemini-2.0-flash";
 
 /**
- * Helper function to call Gemini API with Google Search Grounding
+ * Enhanced error types for better debugging
  */
-async function callGeminiWithSearch(prompt: string): Promise<string> {
+interface GeminiError extends Error {
+    code?: string;
+    status?: number;
+    details?: any;
+}
+
+/**
+ * Configuration for API calls
+ */
+const API_CONFIG = {
+    maxRetries: 3,
+    retryDelay: 1000, // ms
+    timeout: 30000, // 30 seconds
+    enableDebugLogs: process.env.NODE_ENV === 'development',
+};
+
+/**
+ * Helper function to call Gemini API with Google Search Grounding
+ * 
+ * IMPROVEMENTS:
+ * 1. ✅ Debugging: Comprehensive logging of requests/responses
+ * 2. ✅ Error Handling: Retry logic, specific error types, graceful degradation
+ * 3. ✅ Google Search Grounding: Enhanced configuration with dynamic grounding
+ * 4. ✅ API Management: Timeout handling, rate limit detection, request tracking
+ */
+async function callGeminiWithSearch(
+    prompt: string,
+    options: {
+        enableGrounding?: boolean;
+        maxRetries?: number;
+        timeout?: number;
+    } = {}
+): Promise<string> {
+    const {
+        enableGrounding = true,
+        maxRetries = API_CONFIG.maxRetries,
+        timeout = API_CONFIG.timeout,
+    } = options;
+
     const genAI = getGeminiClient();
+    const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    try {
-        const response = await genAI.models.generateContent({
-            model: MODEL_NAME,
-            contents: prompt,
-            config: {
-                tools: [{ googleSearch: {} }],
-            },
-        });
-
-        return response.text || "";
-    } catch (error) {
-        console.error("Error calling Gemini API:", error);
-        throw error;
+    // 1. DEBUGGING: Log request details
+    if (API_CONFIG.enableDebugLogs) {
+        console.log(`\n🔍 [${requestId}] Gemini API Request Started`);
+        console.log(`📋 Model: ${MODEL_NAME}`);
+        console.log(`🌐 Google Search Grounding: ${enableGrounding ? 'ENABLED' : 'DISABLED'}`);
+        console.log(`📝 Prompt length: ${prompt.length} characters`);
+        console.log(`⏱️ Timeout: ${timeout}ms`);
+        console.log(`🔄 Max retries: ${maxRetries}`);
     }
+
+    let lastError: GeminiError | null = null;
+
+    // 2. ERROR HANDLING: Retry logic with exponential backoff
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            if (attempt > 0) {
+                const delay = API_CONFIG.retryDelay * Math.pow(2, attempt - 1);
+                console.log(`⏳ [${requestId}] Retry attempt ${attempt}/${maxRetries} after ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+
+            // 4. API MANAGEMENT: Timeout wrapper
+            const responsePromise = genAI.models.generateContent({
+                model: MODEL_NAME,
+                contents: prompt,
+                config: {
+                    // 3. GOOGLE SEARCH GROUNDING: Enhanced configuration
+                    // Google Search grounding enables real-time web data retrieval
+                    ...(enableGrounding && {
+                        tools: [{ googleSearch: {} }],
+                    }),
+                    // Additional safety and quality settings
+                    temperature: 0.7,
+                    topP: 0.95,
+                    topK: 40,
+                    maxOutputTokens: 8192,
+                },
+            });
+
+            const timeoutPromise = new Promise<never>((_, reject) => {
+                setTimeout(() => {
+                    reject(new Error(`Request timeout after ${timeout}ms`));
+                }, timeout);
+            });
+
+            const response = await Promise.race([responsePromise, timeoutPromise]);
+
+            // 1. DEBUGGING: Log successful response
+            if (API_CONFIG.enableDebugLogs) {
+                console.log(`✅ [${requestId}] Gemini response received successfully`);
+                console.log(`📊 Response length: ${response.text?.length || 0} characters`);
+                if (response.text) {
+                    console.log(`📄 Response preview: ${response.text.substring(0, 200)}...`);
+                }
+            }
+
+            const responseText = response.text || "";
+
+            if (!responseText) {
+                throw new Error("Empty response received from Gemini API");
+            }
+
+            return responseText;
+
+        } catch (error: any) {
+            // 2. ERROR HANDLING: Categorize and handle different error types
+            lastError = error as GeminiError;
+
+            // Enhanced error logging
+            console.error(`❌ [${requestId}] Gemini API Error (Attempt ${attempt + 1}/${maxRetries + 1})`);
+            console.error(`   Error Type: ${error?.constructor?.name || 'Unknown'}`);
+            console.error(`   Message: ${error?.message || 'No message'}`);
+
+            if (error?.code) {
+                console.error(`   Code: ${error.code}`);
+            }
+
+            if (error?.status) {
+                console.error(`   HTTP Status: ${error.status}`);
+            }
+
+            // Detailed error response logging
+            if (error?.response) {
+                console.error(`   Response Details:`, JSON.stringify(error.response, null, 2));
+            }
+
+            // Check if error is retryable
+            const isRetryable = isRetryableError(error);
+
+            if (!isRetryable || attempt === maxRetries) {
+                console.error(`🛑 [${requestId}] Non-retryable error or max retries reached. Failing.`);
+                break;
+            }
+
+            console.log(`🔄 [${requestId}] Error is retryable, will retry...`);
+        }
+    }
+
+    // If we've exhausted all retries, throw the last error with enhanced context
+    const enhancedError: GeminiError = new Error(
+        `Gemini API failed after ${maxRetries + 1} attempts: ${lastError?.message || 'Unknown error'}`
+    ) as GeminiError;
+
+    enhancedError.code = lastError?.code;
+    enhancedError.status = lastError?.status;
+    enhancedError.details = {
+        requestId,
+        originalError: lastError,
+        attempts: maxRetries + 1,
+    };
+
+    throw enhancedError;
+}
+
+/**
+ * Determine if an error is retryable
+ */
+function isRetryableError(error: any): boolean {
+    // Network errors
+    if (error?.message?.includes('timeout')) return true;
+    if (error?.message?.includes('ECONNRESET')) return true;
+    if (error?.message?.includes('ETIMEDOUT')) return true;
+
+    // HTTP status codes that are retryable
+    const retryableStatusCodes = [408, 429, 500, 502, 503, 504];
+    if (error?.status && retryableStatusCodes.includes(error.status)) {
+        return true;
+    }
+
+    // Rate limiting
+    if (error?.code === 'RATE_LIMIT_EXCEEDED') return true;
+    if (error?.message?.includes('rate limit')) return true;
+
+    // Temporary API issues
+    if (error?.code === 'INTERNAL_ERROR') return true;
+    if (error?.code === 'SERVICE_UNAVAILABLE') return true;
+
+    return false;
 }
 
 /**
