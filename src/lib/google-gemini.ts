@@ -83,11 +83,6 @@ async function callGeminiWithSearch(
                 model: MODEL_NAME,
                 contents: prompt,
                 config: {
-                    // 3. GOOGLE SEARCH GROUNDING: Enhanced configuration
-                    // Google Search grounding enables real-time web data retrieval
-                    ...(enableGrounding && {
-                        tools: [{ googleSearch: {} }],
-                    }),
                     // Additional safety and quality settings
                     temperature: 0.7,
                     topP: 0.95,
