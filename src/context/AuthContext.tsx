@@ -10,8 +10,22 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const CORRECT_PASSWORD = "euro_med@";
+// Password configuration with expiration
+const PASSWORD_CONFIG = {
+    current: "euro_med@",
+    expirationDate: new Date("2026-01-27T23:59:59"),
+    next: "euromed_26"
+};
+
 const AUTH_KEY = "euromed_auth";
+
+// Function to get the current valid password based on date
+const getCurrentPassword = (): string => {
+    const now = new Date();
+    return now > PASSWORD_CONFIG.expirationDate
+        ? PASSWORD_CONFIG.next
+        : PASSWORD_CONFIG.current;
+};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -27,7 +41,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const login = (password: string): boolean => {
-        if (password === CORRECT_PASSWORD) {
+        const validPassword = getCurrentPassword();
+        if (password === validPassword) {
             setIsAuthenticated(true);
             sessionStorage.setItem(AUTH_KEY, "true");
             return true;
